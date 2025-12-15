@@ -1,39 +1,377 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width">
-  <title>My Portfolio</title>
-  <link href="style.css" rel="stylesheet" type="text/css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nathan's Web Page</title>
+  <meta name="description" content="Personal website of Nathan Suttie">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Geo:ital@0;1&family=Press+Start+2P&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      font-size: 18px;
+    }
+
+    body {
+      width: 100%;
+      min-height: 100vh;
+      background: #101216;
+      font-family: 'Source Serif 4', 'Cormorant Garamond', Georgia, serif;
+      color: #e8e4de;
+      line-height: 1.6;
+    }
+
+    /* Canvas mode (home page) */
+    body.canvas-mode {
+      overflow: hidden;
+      background: #101216;
+    }
+
+    /* HTML mode (subpages) */
+    body.html-mode {
+      overflow: auto;
+    }
+
+    #canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      transform: translateY(0);
+      transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    #canvas.shifted-up {
+      transform: translateY(-12%);
+    }
+
+    body.html-mode #canvas {
+      display: none;
+    }
+
+    /* Home page menu overlay */
+    #home-menu {
+      position: fixed;
+      top: 48%;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.6rem;
+      z-index: 10;
+    }
+
+    #home-menu a {
+      font-family: 'Geo', sans-serif;
+      font-size: 1.2rem;
+      font-style: normal;
+      color: #e8e4de;
+      text-decoration: none;
+      text-shadow: 2px 2px 0 #000000;
+      opacity: 0;
+      position: relative;
+      display: inline-block;
+      transition: opacity 0.1s;
+      padding: 0.3rem 0.5rem;
+      border: 1px solid #333;
+    }
+
+    #home-menu a span {
+      display: inline-block;
+    }
+
+    #home-menu a:hover span {
+      transform: translateY(-2px);
+    }
+
+    /* Underline stays in place via pseudo-element */
+    #home-menu a::after {
+      content: '';
+      position: absolute;
+      left: 0.5rem;
+      right: 0.5rem;
+      bottom: 0.75rem;
+      height: 1px;
+      background: #e8e4de;
+      opacity: 0;
+    }
+
+    #home-menu a:hover::after {
+      opacity: 1;
+    }
+
+    #home-menu a.visible {
+      opacity: 1;
+    }
+
+    #home-menu a:nth-child(1) { margin-left: 0; }
+    #home-menu a:nth-child(2) { margin-left: 0.5rem; }
+    #home-menu a:nth-child(3) { margin-left: 1rem; }
+    #home-menu a:nth-child(4) { margin-left: 1.5rem; }
+
+    body.html-mode #home-menu {
+      display: none;
+    }
+
+    #fallback {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #101216;
+      color: #f5f1eb;
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      padding: 2rem;
+    }
+
+    #fallback.active {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    #fallback h1 {
+      font-size: 2.5rem;
+      font-weight: 400;
+      margin-bottom: 1rem;
+      letter-spacing: 0.1em;
+    }
+
+    #fallback p {
+      font-size: 1.2rem;
+      color: #8a8580;
+      max-width: 40ch;
+      line-height: 1.6;
+    }
+
+    #fallback a {
+      color: #c4a77d;
+      text-decoration: none;
+    }
+
+    /* === SUBPAGE STYLES === */
+    .page-content {
+      display: none;
+      max-width: 650px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 6rem;
+    }
+
+    body.html-mode .page-content.active {
+      display: block;
+    }
+
+    .page-content header {
+      margin-bottom: 3rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid #333;
+    }
+
+    .page-content h1 {
+      font-family: 'Geo', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 400;
+      color: #e8e4de;
+      text-shadow: 2px 2px 0 #000000;
+      margin-bottom: 1rem;
+    }
+
+    .page-content .back-link {
+      font-family: 'Geo', sans-serif;
+      font-size: 0.95rem;
+      color: #888;
+      text-decoration: none;
+      text-shadow: 1px 1px 0 #000000;
+    }
+
+    .page-content .back-link:hover {
+      color: #e8e4de;
+    }
+
+    .page-content h2 {
+      font-family: 'Geo', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 400;
+      margin: 2rem 0 1rem;
+      color: #e8e4de;
+      text-shadow: 1px 1px 0 #000000;
+    }
+
+    .page-content p {
+      font-family: 'Geo', sans-serif;
+      margin-bottom: 1rem;
+      color: #a8a4a0;
+      line-height: 1.8;
+    }
+
+    .page-content a {
+      color: #e8e4de;
+      text-decoration: none;
+      border-bottom: 1px solid #555;
+      transition: border-color 0.2s;
+    }
+
+    .page-content a:hover {
+      border-bottom-color: #e8e4de;
+    }
+
+    .page-content ul, .page-content ol {
+      margin: 1rem 0 1rem 1.5rem;
+    }
+
+    .page-content li {
+      font-family: 'Geo', sans-serif;
+      margin-bottom: 0.5rem;
+      color: #a8a4a0;
+    }
+
+    .page-content .meta {
+      font-size: 0.85rem;
+      color: #666;
+      font-style: normal;
+    }
+
+    .page-content .project-item,
+    .page-content .blog-item {
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid #222;
+    }
+
+    .page-content .project-item:last-child,
+    .page-content .blog-item:last-child {
+      border-bottom: none;
+    }
+
+    .page-content .project-title,
+    .page-content .blog-title {
+      font-family: 'Geo', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 400;
+      margin-bottom: 0.25rem;
+      text-shadow: 1px 1px 0 #000000;
+    }
+
+    .page-content .contact-item {
+      margin-bottom: 1rem;
+    }
+
+    .page-content .contact-item a {
+      font-family: 'Geo', sans-serif;
+      font-size: 1.1rem;
+      color: #a8a4a0;
+      text-shadow: 1px 1px 0 #000000;
+    }
+
+    .page-content .contact-item a:hover {
+      color: #e8e4de;
+    }
+
+    /* Small screens */
+    @media (max-width: 600px) {
+      html {
+        font-size: 16px;
+      }
+      .page-content {
+        padding: 2rem 1rem 4rem;
+      }
+    }
+  </style>
 </head>
-<body>
-  <button id="toggle-button">
-    <svg viewBox="0 0 24 24">
-      <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
-    </svg>
-  </button>
-  <canvas id="game-canvas"></canvas>
-  <main>
-    <div class="grid">
-      <a href="/projects" class="block">
-        <h2>Projects</h2>
-        <p>View my work</p>
-      </a>
-      <a href="/about" class="block">
-        <h2>About</h2>
-        <p>Learn about me</p>
-      </a>
-      <a href="/blog" class="block">
-        <h2>Blog</h2>
-        <p>Read my thoughts</p>
-      </a>
-      <a href="/contact" class="block">
-        <h2>Contact</h2>
-        <p>Get in touch</p>
-      </a>
+<body class="canvas-mode">
+  <!-- WebGPU Canvas (home page - name only) -->
+  <canvas id="canvas"></canvas>
+  
+  <!-- Home page navigation menu (HTML overlay) -->
+  <nav id="home-menu">
+    <a href="/about-me" data-nav="about me"><span>about me</span></a>
+    <a href="/projects" data-nav="projects"><span>projects</span></a>
+    <a href="/blog" data-nav="blog"><span>blog</span></a>
+    <a href="/contact-me" data-nav="contact me"><span>contact me</span></a>
+  </nav>
+  
+  <!-- Fallback for no WebGPU -->
+  <div id="fallback">
+    <h1>NATHAN SUTTIE</h1>
+    <p>This website uses WebGPU to render a living interface. Please view in <a href="https://www.google.com/chrome/">Chrome</a> or <a href="https://www.microsoft.com/edge">Edge</a> for the full experience.</p>
+  </div>
+
+  <!-- About Me Page -->
+  <article id="page-about-me" class="page-content">
+    <header>
+      <h1>about me</h1>
+      <a href="/" class="back-link" data-nav="home">← back to home</a>
+    </header>
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+    <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+    <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.</p>
+  </article>
+
+  <!-- Projects Page -->
+  <article id="page-projects" class="page-content">
+    <header>
+      <h1>projects</h1>
+      <a href="/" class="back-link" data-nav="home">← back to home</a>
+    </header>
+    <div class="project-item">
+      <div class="project-title">Lorem Ipsum</div>
+      <p class="meta">Dolor sit amet consectetur</p>
+      <p>Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.</p>
     </div>
-  </main>
-  <script type="module" src="script.js"></script>
+    <div class="project-item">
+      <div class="project-title">Adipiscing Elit</div>
+      <p class="meta">Sed do eiusmod tempor incididunt</p>
+      <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
+    </div>
+  </article>
+
+  <!-- Blog Page -->
+  <article id="page-blog" class="page-content">
+    <header>
+      <h1>blog</h1>
+      <a href="/" class="back-link" data-nav="home">← back to home</a>
+    </header>
+    <p class="meta" style="margin-bottom: 2rem;">Duis aute irure dolor in reprehenderit in voluptate.</p>
+    <div class="blog-item">
+      <div class="blog-title">Excepteur Sint Occaecat</div>
+      <p class="meta">20XX.XX.XX</p>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+    </div>
+    <div class="blog-item">
+      <div class="blog-title">Cupidatat Non Proident</div>
+      <p class="meta">20XX.XX.XX</p>
+      <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+    </div>
+  </article>
+
+  <!-- Contact Page -->
+  <article id="page-contact-me" class="page-content">
+    <header>
+      <h1>contact me</h1>
+      <a href="/" class="back-link" data-nav="home">← back to home</a>
+    </header>
+    <div class="contact-item">
+      <a href="mailto:admin@suttiesupport.com">admin@suttiesupport.com</a>
+    </div>
+    <div class="contact-item">
+      <a href="https://github.com/natesute" target="_blank" rel="noopener">github.com/natesute</a>
+    </div>
+  </article>
+
+  <script type="module" src="/src/main.ts"></script>
 </body>
 </html>
