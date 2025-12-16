@@ -1,0 +1,11 @@
+# Robots.txt for nathansuttie.com
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://nathansuttie.com/sitemap.xml
+
+# LLM-friendly content
+# llms.txt: https://nathansuttie.com/llms.txt
+# llms-full.txt: https://nathansuttie.com/llms-full.txt

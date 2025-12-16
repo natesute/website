@@ -10,6 +10,9 @@ struct Uniforms {
     underlineY: f32,
     underlineW: f32,
     underlineH: f32,
+    // Canvas dimensions for aspect ratio correction
+    canvasWidth: f32,
+    canvasHeight: f32,
 }
 
 struct VertexOutput {
@@ -64,21 +67,43 @@ fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
     let w = u32(uniforms.simWidth);
     let h = u32(uniforms.simHeight);
     
-    let cellX = u32(input.uv.x * uniforms.simWidth);
-    let cellY = u32(input.uv.y * uniforms.simHeight);
-    
-    var cx = min(cellX, w - 1u);
-    var cy = min(cellY, h - 1u);
-    
     // Colors
     let void_black = vec3<f32>(0.063, 0.071, 0.086);       // #101216 (cool tint)
     let white = vec3<f32>(0.910, 0.890, 0.870);
     
-    // Check if in underline region
-    let inUnderline = input.uv.x >= uniforms.underlineX && 
-                      input.uv.x <= uniforms.underlineX + uniforms.underlineW &&
-                      input.uv.y >= uniforms.underlineY && 
-                      input.uv.y <= uniforms.underlineY + uniforms.underlineH &&
+    // Aspect ratio correction: maintain square simulation proportions
+    let canvasAspect = uniforms.canvasWidth / uniforms.canvasHeight;
+    let simAspect = uniforms.simWidth / uniforms.simHeight;  // Should be 1.0 for square
+    
+    var uv = input.uv;
+    
+    // Adjust UVs to maintain aspect ratio (fit simulation in canvas center)
+    if (canvasAspect > simAspect) {
+        // Canvas is wider than simulation - letterbox horizontally
+        let scale = canvasAspect / simAspect;
+        uv.x = (uv.x - 0.5) * scale + 0.5;
+    } else {
+        // Canvas is taller than simulation - letterbox vertically
+        let scale = simAspect / canvasAspect;
+        uv.y = (uv.y - 0.5) * scale + 0.5;
+    }
+    
+    // If outside the simulation bounds, show background
+    if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
+        return vec4<f32>(void_black, 1.0);
+    }
+    
+    let cellX = u32(uv.x * uniforms.simWidth);
+    let cellY = u32(uv.y * uniforms.simHeight);
+    
+    var cx = min(cellX, w - 1u);
+    var cy = min(cellY, h - 1u);
+    
+    // Check if in underline region (using aspect-corrected UVs)
+    let inUnderline = uv.x >= uniforms.underlineX && 
+                      uv.x <= uniforms.underlineX + uniforms.underlineW &&
+                      uv.y >= uniforms.underlineY && 
+                      uv.y <= uniforms.underlineY + uniforms.underlineH &&
                       uniforms.underlineW > 0.0;
     
     // Underline takes priority - always white

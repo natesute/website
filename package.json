@@ -3,12 +3,19 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
+    "dev": "npm run build:content && vite",
+    "build": "npm run build:content && tsc && vite build",
+    "build:content": "tsx scripts/build-content.ts",
     "preview": "vite preview"
   },
+  "dependencies": {
+    "gray-matter": "^4.0.3",
+    "marked": "^15.0.4"
+  },
   "devDependencies": {
+    "@types/node": "^22.10.2",
     "@webgpu/types": "^0.1.40",
+    "tsx": "^4.19.2",
     "typescript": "^5.3.3",
     "vite": "^5.0.10"
   }

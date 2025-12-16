@@ -1,0 +1,23 @@
+# Nathan Suttie
+
+> Software engineer and creative technologist
+
+## Pages
+
+- [About Me](/about-me): Background, skills, and interests
+- [Contact Me](/contact-me): Get in touch
+
+## Projects
+
+- **Lorem Ipsum**: Dolor sit amet consectetur
+- **Adipiscing Elit**: Sed do eiusmod tempor incididunt
+
+## Writings
+
+- **Cupidatat Non Proident** (2024-02-20): Another post
+- **Excepteur Sint Occaecat** (2024-01-15): A brief introduction
+
+## Contact
+
+- Email: admin@mail.com
+- GitHub: github.com/mygithubusername

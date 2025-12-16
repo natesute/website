@@ -4,7 +4,38 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Nathan's Web Page</title>
-  <meta name="description" content="Personal website of Nathan Suttie">
+  <meta name="description" content="Personal website of Nathan Suttie - Software engineer and creative technologist">
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://nathansuttie.com/">
+  <meta property="og:title" content="Nathan Suttie">
+  <meta property="og:description" content="Software engineer and creative technologist">
+  <meta property="og:site_name" content="Nathan Suttie">
+  
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Nathan Suttie">
+  <meta name="twitter:description" content="Software engineer and creative technologist">
+  
+  <!-- Canonical URL -->
+  <link rel="canonical" href="https://nathansuttie.com/">
+  
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Nathan Suttie",
+    "url": "https://nathansuttie.com",
+    "jobTitle": "Software Engineer",
+    "description": "Software engineer and creative technologist",
+    "sameAs": [
+      "https://github.com/mygithubusername"
+    ]
+  }
+  </script>
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Geo:ital@0;1&family=Press+Start+2P&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
@@ -246,19 +277,19 @@
     }
 
     .page-content .project-item,
-    .page-content .blog-item {
+    .page-content .writings-item {
       margin-bottom: 2rem;
       padding-bottom: 1.5rem;
       border-bottom: 1px solid #222;
     }
 
     .page-content .project-item:last-child,
-    .page-content .blog-item:last-child {
+    .page-content .writings-item:last-child {
       border-bottom: none;
     }
 
     .page-content .project-title,
-    .page-content .blog-title {
+    .page-content .writings-title {
       font-family: 'Geo', sans-serif;
       font-size: 1.1rem;
       font-weight: 400;
@@ -300,7 +331,7 @@
   <nav id="home-menu">
     <a href="/about-me" data-nav="about me"><span>about me</span></a>
     <a href="/projects" data-nav="projects"><span>projects</span></a>
-    <a href="/blog" data-nav="blog"><span>blog</span></a>
+    <a href="/writings" data-nav="writings"><span>writings</span></a>
     <a href="/contact-me" data-nav="contact me"><span>contact me</span></a>
   </nav>
   
@@ -339,20 +370,20 @@
     </div>
   </article>
 
-  <!-- Blog Page -->
-  <article id="page-blog" class="page-content">
+  <!-- Writings Page -->
+  <article id="page-writings" class="page-content">
     <header>
-      <h1>blog</h1>
+      <h1>writings</h1>
       <a href="/" class="back-link" data-nav="home">← back to home</a>
     </header>
     <p class="meta" style="margin-bottom: 2rem;">Duis aute irure dolor in reprehenderit in voluptate.</p>
-    <div class="blog-item">
-      <div class="blog-title">Excepteur Sint Occaecat</div>
+    <div class="writings-item">
+      <div class="writings-title">Excepteur Sint Occaecat</div>
       <p class="meta">20XX.XX.XX</p>
       <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
     </div>
-    <div class="blog-item">
-      <div class="blog-title">Cupidatat Non Proident</div>
+    <div class="writings-item">
+      <div class="writings-title">Cupidatat Non Proident</div>
       <p class="meta">20XX.XX.XX</p>
       <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
     </div>

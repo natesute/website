@@ -13,7 +13,7 @@ async function init() {
   const pageElements: Record<string, HTMLElement | null> = {
     'about me': document.getElementById('page-about-me'),
     'projects': document.getElementById('page-projects'),
-    'blog': document.getElementById('page-blog'),
+    'writings': document.getElementById('page-writings'),
     'contact me': document.getElementById('page-contact-me'),
   };
 
@@ -92,19 +92,19 @@ async function init() {
       renderer.enableWobble(performance.now() / 1000);
     }, 1300);
     
-    // Start revealing links 500ms after shift starts
+    // Start revealing links 600ms after shift starts
     setTimeout(() => {
       menuLinks.forEach((link, index) => {
         // Eased timing: faster at start, slower at end
         // Using cubic curve for more noticeable slowdown
         const t = index / (menuLinks.length - 1);
         const easedT = t * t * t; // Cubic - delays grow more progressively
-        const delay = easedT * 350; // Total spread of ~350ms
+        const delay = easedT * 400; // Total spread of ~400ms
         setTimeout(() => {
           link.classList.add('visible');
         }, delay);
       });
-    }, 500);
+    }, 600);
   }
 
   // Switch to canvas mode (home page)
@@ -234,7 +234,7 @@ async function init() {
 
       const commandEncoder = device.createCommandEncoder();
       const stillGrowing = isGrowing && !simulation.getIsComplete();
-      renderer.render(commandEncoder, context!.getCurrentTexture().createView(), time / 1000, stillGrowing);
+      renderer.render(commandEncoder, context!.getCurrentTexture().createView(), time / 1000, stillGrowing, canvas.width, canvas.height);
       device.queue.submit([commandEncoder.finish()]);
     }
 

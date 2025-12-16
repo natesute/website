@@ -9,6 +9,10 @@ yarn-error.log*
 # Build output
 dist/
 build/
+generated/
+
+# Obsidian
+content/.obsidian/
 
 # OS-specific files
 .DS_Store
