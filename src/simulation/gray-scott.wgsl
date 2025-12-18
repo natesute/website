@@ -97,3 +97,5 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
     nextState[idx] = vec2<f32>(newU, newV);
 }
 
+
+

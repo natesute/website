@@ -29,7 +29,6 @@ interface SiteConfig {
   tagline: string;
   email: string;
   github: string;
-  url: string;
 }
 
 interface PageMeta {
@@ -46,7 +45,7 @@ interface ContentItem {
   meta: PageMeta;
   content: string;
   html: string;
-  type: 'page' | 'project' | 'writings';
+  type: 'page' | 'project' | 'blog';
 }
 
 /**
@@ -82,10 +81,10 @@ function parseMarkdownFile(filePath: string): { meta: PageMeta; content: string 
 /**
  * Determine content type from file path
  */
-function getContentType(filePath: string): 'page' | 'project' | 'writings' {
+function getContentType(filePath: string): 'page' | 'project' | 'blog' {
   const relativePath = path.relative(CONTENT_DIR, filePath);
   if (relativePath.startsWith('projects/')) return 'project';
-  if (relativePath.startsWith('writings/')) return 'writings';
+  if (relativePath.startsWith('blog/')) return 'blog';
   return 'page';
 }
 
@@ -104,7 +103,7 @@ function generateLlmsTxt(site: SiteConfig, items: ContentItem[]): string {
   // Group by type
   const pages = items.filter((i) => i.type === 'page');
   const projects = items.filter((i) => i.type === 'project' && !i.path.includes('_index'));
-  const writings = items.filter((i) => i.type === 'writings' && !i.path.includes('_index'));
+  const blogs = items.filter((i) => i.type === 'blog' && !i.path.includes('_index'));
 
   // Pages section
   if (pages.length > 0) {
@@ -127,22 +126,20 @@ function generateLlmsTxt(site: SiteConfig, items: ContentItem[]): string {
     lines.push('');
   }
 
-  // Writings section
-  if (writings.length > 0) {
-    lines.push('## Writings');
+  // Blog section
+  if (blogs.length > 0) {
+    lines.push('## Blog Posts');
     lines.push('');
     // Sort by date descending
-    const sortedWritings = writings
+    const sortedBlogs = blogs
       .filter((b) => !b.meta.draft)
       .sort((a, b) => {
         const dateA = a.meta.date ? new Date(a.meta.date).getTime() : 0;
         const dateB = b.meta.date ? new Date(b.meta.date).getTime() : 0;
         return dateB - dateA;
       });
-    for (const post of sortedWritings) {
-      const dateStr = post.meta.date
-        ? new Date(post.meta.date).toISOString().split('T')[0]
-        : 'Unknown date';
+    for (const post of sortedBlogs) {
+      const dateStr = post.meta.date || 'Unknown date';
       lines.push(`- **${post.meta.title}** (${dateStr}): ${post.meta.description}`);
     }
     lines.push('');
@@ -172,12 +169,12 @@ function generateLlmsFullTxt(site: SiteConfig, items: ContentItem[]): string {
   lines.push('---');
   lines.push('');
 
-  // Sort items: pages first (by order), then projects, then writings (by date)
+  // Sort items: pages first (by order), then projects, then blog posts (by date)
   const pages = items.filter((i) => i.type === 'page');
   const projectIndex = items.find((i) => i.type === 'project' && i.path.includes('_index'));
   const projects = items.filter((i) => i.type === 'project' && !i.path.includes('_index'));
-  const writingsIndex = items.find((i) => i.type === 'writings' && i.path.includes('_index'));
-  const writings = items.filter((i) => i.type === 'writings' && !i.path.includes('_index'));
+  const blogIndex = items.find((i) => i.type === 'blog' && i.path.includes('_index'));
+  const blogs = items.filter((i) => i.type === 'blog' && !i.path.includes('_index'));
 
   // Pages
   for (const page of pages.sort((a, b) => (a.meta.order ?? 99) - (b.meta.order ?? 99))) {
@@ -213,28 +210,25 @@ function generateLlmsFullTxt(site: SiteConfig, items: ContentItem[]): string {
     lines.push('');
   }
 
-  // Writings
-  if (writings.length > 0) {
-    lines.push('## Writings');
+  // Blog posts
+  if (blogs.length > 0) {
+    lines.push('## Blog');
     lines.push('');
-    if (writingsIndex?.content) {
-      lines.push(writingsIndex.content);
+    if (blogIndex?.content) {
+      lines.push(blogIndex.content);
       lines.push('');
     }
-    const sortedWritings = writings
+    const sortedBlogs = blogs
       .filter((b) => !b.meta.draft)
       .sort((a, b) => {
         const dateA = a.meta.date ? new Date(a.meta.date).getTime() : 0;
         const dateB = b.meta.date ? new Date(b.meta.date).getTime() : 0;
         return dateB - dateA;
       });
-    for (const post of sortedWritings) {
-      const dateStr = post.meta.date
-        ? new Date(post.meta.date).toISOString().split('T')[0]
-        : 'Unknown date';
+    for (const post of sortedBlogs) {
       lines.push(`### ${post.meta.title}`);
       lines.push('');
-      lines.push(`*${dateStr}*`);
+      lines.push(`*${post.meta.date || 'Unknown date'}*`);
       lines.push('');
       if (post.content) {
         lines.push(post.content);
@@ -252,70 +246,6 @@ function generateLlmsFullTxt(site: SiteConfig, items: ContentItem[]): string {
   lines.push(`- GitHub: github.com/${site.github}`);
   lines.push('');
 
-  return lines.join('\n');
-}
-
-/**
- * Generate sitemap.xml for SEO
- */
-function generateSitemap(site: SiteConfig, items: ContentItem[]): string {
-  const lines: string[] = [];
-  lines.push('<?xml version="1.0" encoding="UTF-8"?>');
-  lines.push('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">');
-
-  // Homepage
-  lines.push('  <url>');
-  lines.push(`    <loc>${site.url}/</loc>`);
-  lines.push('    <changefreq>weekly</changefreq>');
-  lines.push('    <priority>1.0</priority>');
-  lines.push('  </url>');
-
-  // Pages
-  const pages = items.filter((i) => i.type === 'page');
-  for (const page of pages) {
-    const slug = page.meta.slug || page.meta.title.toLowerCase().replace(/\s+/g, '-');
-    lines.push('  <url>');
-    lines.push(`    <loc>${site.url}/${slug}</loc>`);
-    lines.push('    <changefreq>monthly</changefreq>');
-    lines.push('    <priority>0.8</priority>');
-    lines.push('  </url>');
-  }
-
-  // Section indexes (projects, writings)
-  const hasProjects = items.some((i) => i.type === 'project');
-  const hasWritings = items.some((i) => i.type === 'writings');
-
-  if (hasProjects) {
-    lines.push('  <url>');
-    lines.push(`    <loc>${site.url}/projects</loc>`);
-    lines.push('    <changefreq>weekly</changefreq>');
-    lines.push('    <priority>0.8</priority>');
-    lines.push('  </url>');
-  }
-
-  if (hasWritings) {
-    lines.push('  <url>');
-    lines.push(`    <loc>${site.url}/writings</loc>`);
-    lines.push('    <changefreq>weekly</changefreq>');
-    lines.push('    <priority>0.8</priority>');
-    lines.push('  </url>');
-  }
-
-  // Writings (with lastmod from date)
-  const writings = items.filter((i) => i.type === 'writings' && !i.path.includes('_index') && !i.meta.draft);
-  for (const post of writings) {
-    const slug = post.meta.slug || post.meta.title.toLowerCase().replace(/\s+/g, '-');
-    lines.push('  <url>');
-    lines.push(`    <loc>${site.url}/writings/${slug}</loc>`);
-    if (post.meta.date) {
-      lines.push(`    <lastmod>${new Date(post.meta.date).toISOString().split('T')[0]}</lastmod>`);
-    }
-    lines.push('    <changefreq>yearly</changefreq>');
-    lines.push('    <priority>0.6</priority>');
-    lines.push('  </url>');
-  }
-
-  lines.push('</urlset>');
   return lines.join('\n');
 }
 
@@ -341,15 +271,11 @@ function generateHtmlContent(
   // Process each item
   for (const item of items) {
     const slug = item.meta.slug || item.meta.title.toLowerCase().replace(/\s+/g, '-');
-
-    // Determine the key for this content item
-    let key: string;
-    if (item.path.includes('_index')) {
-      // Index files use their type as the key
-      key = item.type === 'project' ? 'projects' : item.type === 'writings' ? 'writings' : slug;
-    } else {
-      key = slug;
-    }
+    const key = item.path.includes('_index')
+      ? item.type === 'project'
+        ? 'projects'
+        : 'blog'
+      : slug;
 
     result[key] = {
       title: item.meta.title,
@@ -386,7 +312,6 @@ async function build(): Promise<void> {
     tagline: (siteMeta as unknown as SiteConfig).tagline || '',
     email: (siteMeta as unknown as SiteConfig).email || '',
     github: (siteMeta as unknown as SiteConfig).github || '',
-    url: (siteMeta as unknown as SiteConfig).url || 'https://example.com',
   };
 
   // Handle site.md which uses name instead of title
@@ -396,7 +321,6 @@ async function build(): Promise<void> {
   site.tagline = siteData.tagline || site.tagline;
   site.email = siteData.email || site.email;
   site.github = siteData.github || site.github;
-  site.url = siteData.url || 'https://example.com';
 
   // Find and parse all content files
   const markdownFiles = findMarkdownFiles(CONTENT_DIR).filter(
@@ -422,7 +346,6 @@ async function build(): Promise<void> {
   const llmsTxt = generateLlmsTxt(site, items);
   const llmsFullTxt = generateLlmsFullTxt(site, items);
   const htmlContent = generateHtmlContent(site, items);
-  const sitemap = generateSitemap(site, items);
 
   // Write outputs
   fs.writeFileSync(path.join(PUBLIC_DIR, 'llms.txt'), llmsTxt);
@@ -430,9 +353,6 @@ async function build(): Promise<void> {
 
   fs.writeFileSync(path.join(PUBLIC_DIR, 'llms-full.txt'), llmsFullTxt);
   console.log('Generated public/llms-full.txt');
-
-  fs.writeFileSync(path.join(PUBLIC_DIR, 'sitemap.xml'), sitemap);
-  console.log('Generated public/sitemap.xml');
 
   fs.writeFileSync(
     path.join(GENERATED_DIR, 'html-content.json'),
