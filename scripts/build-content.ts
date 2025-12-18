@@ -270,10 +270,10 @@ function generateProjectsListHtml(projects: ContentItem[]): string {
 
   return sorted
     .map(
-      (p) => `    <div class="list-item">
-      <div class="item-title"><a href="/projects/${p.slug}" data-nav="projects/${p.slug}">${p.meta.title}</a></div>
-      <p class="meta">${p.meta.description}</p>
-    </div>`
+      (p) => `    <a href="/projects/${p.slug}" class="list-item" data-nav="projects/${p.slug}">
+      <div class="item-title">${p.meta.title}</div>
+      <div class="item-meta">${p.meta.description}</div>
+    </a>`
     )
     .join('\n');
 }
@@ -297,10 +297,10 @@ function generateWritingsListHtml(writings: ContentItem[], writingsIndex?: Conte
   const items = sorted
     .map((w) => {
       const dateStr = formatDate(w.meta.date);
-      return `    <div class="list-item">
-      <div class="item-title"><a href="/writings/${w.slug}" data-nav="writings/${w.slug}">${w.meta.title}</a></div>
-      <p class="meta">${dateStr}</p>
-    </div>`;
+      return `    <a href="/writings/${w.slug}" class="list-item" data-nav="writings/${w.slug}">
+      <div class="item-title">${w.meta.title}</div>
+      <div class="item-meta">${dateStr}</div>
+    </a>`;
     })
     .join('\n');
 

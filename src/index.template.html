@@ -51,7 +51,7 @@
     }
 
     #canvas.shifted-up {
-      transform: translateY(-12%);
+      transform: translateY(-15%);
     }
 
     body.html-mode #canvas {
@@ -66,8 +66,8 @@
       transform: translateX(-50%);
       display: flex;
       flex-direction: column;
-      align-items: flex-start;
-      gap: 0.6rem;
+      align-items: center;
+      gap: 0.5rem;
       z-index: 10;
     }
 
@@ -79,45 +79,31 @@
       text-decoration: none;
       text-shadow: 2px 2px 0 #000000;
       opacity: 0;
-      position: relative;
-      display: inline-block;
-      transition: opacity 0.1s;
-      padding: 0.3rem 0.5rem;
-      border: 1px solid #333;
+      display: block;
+      width: 10rem;
+      text-align: center;
+      padding: 0.5rem 1rem;
+      border: 1px solid #444;
+      background: transparent;
+      transition: opacity 0.1s, background-color 0.15s, color 0.15s, text-shadow 0.15s;
+      cursor: pointer;
     }
 
-    #home-menu a span {
-      display: inline-block;
-    }
-
-    #home-menu a:hover span {
-      transform: translateY(-2px);
-    }
-
-    /* Underline stays in place via pseudo-element */
-    #home-menu a::after {
-      content: '';
-      position: absolute;
-      left: 0.5rem;
-      right: 0.5rem;
-      bottom: 0.75rem;
-      height: 1px;
-      background: #e8e4de;
-      opacity: 0;
-    }
-
-    #home-menu a:hover::after {
-      opacity: 1;
+    #home-menu a:hover {
+      background: repeating-linear-gradient(
+        to bottom,
+        #e8e4de 0px 2px,
+        transparent 2px 4px
+      );
+      background-size: 100% 4px;
+      color: #101216;
+      text-shadow: 2px 2px 0 #ffffff;
+      border-color: #e8e4de;
     }
 
     #home-menu a.visible {
       opacity: 1;
     }
-
-    #home-menu a:nth-child(1) { margin-left: 0; }
-    #home-menu a:nth-child(2) { margin-left: 0.5rem; }
-    #home-menu a:nth-child(3) { margin-left: 1rem; }
-    #home-menu a:nth-child(4) { margin-left: 1.5rem; }
 
     body.html-mode #home-menu {
       display: none;
@@ -245,30 +231,48 @@
       font-style: normal;
     }
 
-    .page-content .list-item {
-      margin-bottom: 2rem;
-      padding-bottom: 1.5rem;
-      border-bottom: 1px solid #222;
+    .page-content a.list-item {
+      display: block;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      border: 1px solid #444;
+      background: transparent;
+      text-decoration: none;
+      transition: background-color 0.15s, border-color 0.15s;
     }
 
-    .page-content .list-item:last-child {
-      border-bottom: none;
+    .page-content a.list-item:hover {
+      background: repeating-linear-gradient(
+        to bottom,
+        #e8e4de 0px 2px,
+        transparent 2px 4px
+      );
+      background-size: 100% 4px;
+      border-color: #e8e4de;
+    }
+
+    .page-content a.list-item:hover .item-title {
+      color: #101216;
+      text-shadow: 1px 1px 0 #ffffff;
+    }
+
+    .page-content a.list-item:hover .item-meta {
+      color: #ffffff;
     }
 
     .page-content .item-title {
       font-family: 'Geo', sans-serif;
       font-size: 1.1rem;
       font-weight: 400;
-      margin-bottom: 0.25rem;
+      color: #e8e4de;
       text-shadow: 1px 1px 0 #000000;
+      margin-bottom: 0.25rem;
     }
 
-    .page-content .item-title a {
-      border-bottom: none;
-    }
-
-    .page-content .item-title a:hover {
-      border-bottom: 1px solid #e8e4de;
+    .page-content .item-meta {
+      font-family: 'Geo', sans-serif;
+      font-size: 0.9rem;
+      color: #888;
     }
 
     .page-content .contact-item {
@@ -312,10 +316,10 @@
   
   <!-- Home page navigation menu (HTML overlay) -->
   <nav id="home-menu">
-    <a href="/about-me" data-nav="about me"><span>about me</span></a>
-    <a href="/projects" data-nav="projects"><span>projects</span></a>
-    <a href="/writings" data-nav="writings"><span>writings</span></a>
-    <a href="/contact-me" data-nav="contact me"><span>contact me</span></a>
+    <a href="/about-me" data-nav="about me">about me</a>
+    <a href="/projects" data-nav="projects">projects</a>
+    <a href="/writings" data-nav="writings">writings</a>
+    <a href="/contacts" data-nav="contacts">contacts</a>
   </nav>
   
   <!-- Fallback for no WebGPU -->
@@ -357,10 +361,10 @@
   <!-- Individual Writing Pages -->
   <!-- WRITING_PAGES -->
 
-  <!-- Contact Page -->
-  <article id="page-contact-me" class="page-content">
+  <!-- Contacts Page -->
+  <article id="page-contacts" class="page-content">
     <header>
-      <h1>contact me</h1>
+      <h1>contacts</h1>
       <a href="/" class="back-link" data-nav="home">← back to home</a>
     </header>
     <!-- CONTACT_CONTENT -->
@@ -369,3 +373,4 @@
   <script type="module" src="/src/main.ts"></script>
 </body>
 </html>
+

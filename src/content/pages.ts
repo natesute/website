@@ -3,7 +3,7 @@
  * Each page defines its text content and layout for the glyph rasterizer.
  */
 
-export type PageState = 'home' | 'projects' | 'about me' | 'writings' | 'contact me';
+export type PageState = 'home' | 'projects' | 'about me' | 'writings' | 'contacts';
 
 export interface TextBlock {
   text: string;
@@ -30,8 +30,8 @@ export const PAGES: Record<PageState, PageContent> = {
       {
         text: "nathan's",
         x: 0.5,
-        y: 0.34,
-        fontSize: 36,
+        y: 0.44,
+        fontSize: 52,
         align: 'center',
         fontFamily: 'Bytesized',
         letterSpacing: 1,
@@ -39,8 +39,8 @@ export const PAGES: Record<PageState, PageContent> = {
       {
         text: 'web page',
         x: 0.5,
-        y: 0.40,
-        fontSize: 36,
+        y: 0.54,
+        fontSize: 52,
         align: 'center',
         fontFamily: 'Bytesized',
         letterSpacing: 1,
@@ -225,10 +225,10 @@ export const PAGES: Record<PageState, PageContent> = {
     ],
   },
 
-  'contact me': {
+  contacts: {
     blocks: [
       {
-        text: 'contact me',
+        text: 'contacts',
         x: 0.5,
         y: 0.25,
         fontSize: 22,
