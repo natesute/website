@@ -236,14 +236,14 @@ export const PAGES: Record<PageState, PageContent> = {
         italic: true,
       },
       {
-        text: 'admin@suttiesupport.com',
+        text: 'admin@email.com',
         x: 0.5,
         y: 0.45,
         fontSize: 24,
         align: 'center',
       },
       {
-        text: 'github.com/natesute',
+        text: 'github.com/mygithubusername',
         x: 0.5,
         y: 0.55,
         fontSize: 24,
