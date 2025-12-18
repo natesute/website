@@ -123,10 +123,11 @@ export class GrowthSimulation {
         const imgX = Math.floor((x / this.width) * imageWidth);
         const imgY = Math.floor((y / this.height) * imageHeight);
         const imgIdx = (imgY * imageWidth + imgX) * 4;
-        const value = imageData[imgIdx] > 64 ? 1 : 0;
+        // Store actual intensity value (0-255) to differentiate shadow from main text
+        const intensity = imageData[imgIdx];
         
         const idx = y * this.width + x;
-        this.maskData[idx] = value;
+        this.maskData[idx] = intensity;
       }
     }
     
@@ -143,12 +144,17 @@ export class GrowthSimulation {
     const visited = new Uint8Array(this.width * this.height);
     const components: number[][] = [];
     
+    // Use high threshold (> 128) for seed placement so shadow doesn't bridge letters
+    // This keeps each letter as a separate connected component
+    const seedThreshold = 128;
+    
     for (let y = 0; y < this.height; y++) {
       for (let x = 0; x < this.width; x++) {
         const idx = y * this.width + x;
-        if (this.maskData[idx] === 1 && visited[idx] === 0) {
+        // Only consider main text (high intensity) for connected components
+        if (this.maskData[idx] > seedThreshold && visited[idx] === 0) {
           const component: number[] = [];
-          this.floodFill(x, y, visited, component);
+          this.floodFill(x, y, visited, component, seedThreshold);
           if (component.length > 0) {
             components.push(component);
           }
@@ -168,7 +174,7 @@ export class GrowthSimulation {
     console.log(`Found ${components.length} connected components, placed 1 seed each`);
   }
 
-  private floodFill(startX: number, startY: number, visited: Uint8Array, component: number[]) {
+  private floodFill(startX: number, startY: number, visited: Uint8Array, component: number[], threshold: number) {
     const stack: [number, number][] = [[startX, startY]];
     
     while (stack.length > 0) {
@@ -177,7 +183,8 @@ export class GrowthSimulation {
       if (x < 0 || x >= this.width || y < 0 || y >= this.height) continue;
       
       const idx = y * this.width + x;
-      if (visited[idx] === 1 || this.maskData[idx] === 0) continue;
+      // Use threshold to determine connectivity (only high-intensity pixels connect)
+      if (visited[idx] === 1 || this.maskData[idx] <= threshold) continue;
       
       visited[idx] = 1;
       component.push(idx);
@@ -224,7 +231,8 @@ export class GrowthSimulation {
     const stateData = new Uint32Array(this.width * this.height * 2);
     
     for (let i = 0; i < this.width * this.height; i++) {
-      if (this.maskData[i] === 1) {
+      // Check for any non-zero intensity (text region)
+      if (this.maskData[i] > 0) {
         stateData[i * 2] = 1;      // on
         stateData[i * 2 + 1] = 100; // high age so visibility delay is passed
       }
@@ -267,6 +275,10 @@ export class GrowthSimulation {
 
   getCurrentStateBuffer(): GPUBuffer {
     return this.stateBuffers[this.currentBuffer];
+  }
+
+  getMaskBuffer(): GPUBuffer {
+    return this.maskBuffer;
   }
 
   getDimensions(): { width: number; height: number } {

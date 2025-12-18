@@ -57,6 +57,7 @@ export class Renderer {
       entries: [
         { binding: 0, resource: { buffer: simulation.getCurrentStateBuffer() } },
         { binding: 1, resource: { buffer: this.uniformBuffer } },
+        { binding: 2, resource: { buffer: simulation.getMaskBuffer() } },
       ],
     });
 
@@ -105,6 +106,7 @@ export class Renderer {
       entries: [
         { binding: 0, resource: { buffer: this.simulation.getCurrentStateBuffer() } },
         { binding: 1, resource: { buffer: this.uniformBuffer } },
+        { binding: 2, resource: { buffer: this.simulation.getMaskBuffer() } },
       ],
     });
   }
@@ -124,7 +126,7 @@ export class Renderer {
     const pass = encoder.beginRenderPass({
       colorAttachments: [{
         view,
-        clearValue: { r: 0.082, g: 0.082, b: 0.082, a: 1 },
+        clearValue: { r: 0.039, g: 0.055, b: 0.078, a: 1 },
         loadOp: 'clear',
         storeOp: 'store',
       }],

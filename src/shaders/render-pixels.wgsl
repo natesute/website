@@ -23,6 +23,8 @@ struct VertexOutput {
 // State is vec2<u32>: x = on/off, y = age
 @group(0) @binding(0) var<storage, read> state: array<vec2<u32>>;
 @group(0) @binding(1) var<uniform> uniforms: Uniforms;
+// Mask stores intensity: 0 = background, ~68 = shadow (#444), ~255 = main text (#fff)
+@group(0) @binding(2) var<storage, read> mask: array<u32>;
 
 // Hash for random values
 fn hash(p: vec2<u32>) -> f32 {
@@ -68,7 +70,7 @@ fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
     let h = u32(uniforms.simHeight);
     
     // Colors
-    let void_black = vec3<f32>(0.063, 0.071, 0.086);       // #101216 (cool tint)
+    let void_black = vec3<f32>(0.039, 0.055, 0.078);       // #0A0E14 (pure midnight)
     let white = vec3<f32>(0.910, 0.890, 0.870);
     
     // Aspect ratio correction: maintain square simulation proportions
@@ -153,6 +155,15 @@ fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
         return vec4<f32>(void_black, 1.0);
     }
     
-    // All visible cells are white
-    return vec4<f32>(white, 1.0);
+    // Check mask intensity to differentiate shadow from main text
+    let maskIntensity = mask[idx];
+    
+    // Main text (intensity > 128) is bright white, shadow is faint blizzard blue
+    if (maskIntensity > 128u) {
+        return vec4<f32>(white, 1.0);
+    } else {
+        // Shadow pixels - faint blizzard blue tint
+        let shadow_color = vec3<f32>(0.55, 0.65, 0.72);
+        return vec4<f32>(shadow_color, 1.0);
+    }
 }

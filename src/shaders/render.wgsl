@@ -131,7 +131,7 @@ fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
     let organic = organicNoise(input.uv, uniforms.time);
     
     // Color palette
-    let void_black = vec3<f32>(0.063, 0.071, 0.086);       // #101216 (cool tint)
+    let void_black = vec3<f32>(0.078, 0.067, 0.059);       // #14110F (warm tint)
     let pattern_white = vec3<f32>(0.910, 0.890, 0.870);    // #e8e4de
     
     // Combine: mask defines where white appears, RD adds texture within

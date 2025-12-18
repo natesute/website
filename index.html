@@ -22,7 +22,7 @@
     body {
       width: 100%;
       min-height: 100vh;
-      background: #101216;
+      background: #0A0E14;
       font-family: 'Source Serif 4', 'Cormorant Garamond', Georgia, serif;
       color: #e8e4de;
       line-height: 1.6;
@@ -31,7 +31,7 @@
     /* Canvas mode (home page) */
     body.canvas-mode {
       overflow: hidden;
-      background: #101216;
+      background: #0A0E14;
     }
 
     /* HTML mode (subpages) */
@@ -66,7 +66,7 @@
       transform: translateX(-50%);
       display: flex;
       flex-direction: column;
-      align-items: center;
+      align-items: flex-start;
       gap: 0.5rem;
       z-index: 10;
     }
@@ -77,12 +77,11 @@
       font-style: normal;
       color: #e8e4de;
       text-decoration: none;
-      text-shadow: 2px 2px 0 #000000;
       opacity: 0;
       display: block;
-      width: 10rem;
+      width: 8rem;
       text-align: center;
-      padding: 0.5rem 1rem;
+      padding: 0.35rem 0.75rem;
       border: 1px solid #444;
       background: transparent;
       transition: opacity 0.1s, background-color 0.15s, color 0.15s, text-shadow 0.15s;
@@ -97,13 +96,18 @@
       );
       background-size: 100% 4px;
       color: #101216;
-      text-shadow: 2px 2px 0 #ffffff;
+      text-shadow: 1px 1px 0 #ffffff;
       border-color: #e8e4de;
     }
 
     #home-menu a.visible {
       opacity: 1;
     }
+
+    #home-menu a:nth-child(1) { margin-left: 0; }
+    #home-menu a:nth-child(2) { margin-left: 0.6rem; }
+    #home-menu a:nth-child(3) { margin-left: 1.2rem; }
+    #home-menu a:nth-child(4) { margin-left: 1.8rem; }
 
     body.html-mode #home-menu {
       display: none;
@@ -116,7 +120,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: #101216;
+      background: #0A0E14;
       color: #f5f1eb;
       font-family: 'Cormorant Garamond', Georgia, serif;
       padding: 2rem;
@@ -172,7 +176,7 @@
       font-size: 1.8rem;
       font-weight: 400;
       color: #e8e4de;
-      text-shadow: 2px 2px 0 #000000;
+      text-shadow: 1px 1px 0 #8CA6B8;
       margin-bottom: 1rem;
     }
 
@@ -194,7 +198,7 @@
       font-weight: 400;
       margin: 2rem 0 1rem;
       color: #e8e4de;
-      text-shadow: 1px 1px 0 #000000;
+      text-shadow: 1px 1px 0 #8CA6B8;
     }
 
     .page-content p {
@@ -265,7 +269,6 @@
       font-size: 1.1rem;
       font-weight: 400;
       color: #e8e4de;
-      text-shadow: 1px 1px 0 #000000;
       margin-bottom: 0.25rem;
     }
 
@@ -283,7 +286,6 @@
       font-family: 'Geo', sans-serif;
       font-size: 1.1rem;
       color: #a8a4a0;
-      text-shadow: 1px 1px 0 #000000;
     }
 
     .page-content .contact-item a:hover {
