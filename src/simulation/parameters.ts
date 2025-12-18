@@ -36,8 +36,8 @@ export const GENOMES: Record<PageState, Genome> = {
     textFeed: 0.055,
     textKill: 0.062,
   },
-  blog: {
-    name: 'blog',
+  writings: {
+    name: 'writings',
     feed: 0.000,
     kill: 0.100,
     textFeed: 0.055,

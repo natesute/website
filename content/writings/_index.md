@@ -1,7 +1,7 @@
 ---
-title: Blog
+title: Writings
 description: Thoughts and technical writing
-slug: blog
+slug: writings
 order: 3
 ---
 

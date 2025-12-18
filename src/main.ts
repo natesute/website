@@ -1,21 +1,13 @@
 import { GrowthSimulation } from './simulation/growth-simulation';
 import { Renderer } from './renderer';
 import { GlyphRasterizer } from './typography/rasterizer';
-import { PAGES, PageState } from './content/pages';
+import { PAGES } from './content/pages';
 import { loadFonts } from './typography/fonts';
 
 async function init() {
   const canvas = document.getElementById('canvas') as HTMLCanvasElement;
   const fallback = document.getElementById('fallback') as HTMLDivElement;
   const body = document.body;
-
-  // Page elements
-  const pageElements: Record<string, HTMLElement | null> = {
-    'about me': document.getElementById('page-about-me'),
-    'projects': document.getElementById('page-projects'),
-    'blog': document.getElementById('page-blog'),
-    'contact me': document.getElementById('page-contact-me'),
-  };
 
   // Check WebGPU support
   if (!navigator.gpu) {
@@ -65,11 +57,12 @@ async function init() {
   const renderer = new Renderer(device, format, simulation);
   const rasterizer = new GlyphRasterizer(simWidth, simHeight);
   
-  let currentState: PageState = 'home';
+  // Current navigation path (e.g., "home", "projects", "projects/lorem-ipsum")
+  let currentPath = 'home';
   let isGrowing = false;
   let isCanvasMode = true;
   let menuRevealed = false;
-  let hasVisitedHome = false;  // Track if we've already visited home once
+  let hasVisitedHome = false;
   
   // Menu links for staggered reveal
   const menuLinks = document.querySelectorAll('#home-menu a');
@@ -84,22 +77,17 @@ async function init() {
     if (menuRevealed) return;
     menuRevealed = true;
     
-    // Shift canvas up first
     canvas.classList.add('shifted-up');
     
-    // Enable wobble after shift animation completes + 500ms delay
     setTimeout(() => {
       renderer.enableWobble(performance.now() / 1000);
     }, 1300);
     
-    // Start revealing links 600ms after shift starts
     setTimeout(() => {
       menuLinks.forEach((link, index) => {
-        // Eased timing: faster at start, slower at end
-        // Using cubic curve for more noticeable slowdown
         const t = index / (menuLinks.length - 1);
-        const easedT = t * t * t; // Cubic - delays grow more progressively
-        const delay = easedT * 400; // Total spread of ~400ms
+        const easedT = t * t * t;
+        const delay = easedT * 400;
         setTimeout(() => {
           link.classList.add('visible');
         }, delay);
@@ -114,36 +102,50 @@ async function init() {
     body.classList.add('canvas-mode');
     
     // Hide all HTML pages
-    Object.values(pageElements).forEach(el => {
-      if (el) el.classList.remove('active');
+    document.querySelectorAll('.page-content').forEach(el => {
+      el.classList.remove('active');
     });
   }
 
-  // Switch to HTML mode (subpages)
-  function showHtmlMode(state: PageState) {
+  /**
+   * Show HTML mode for a given path.
+   * Path can be: "about me", "projects", "projects/lorem-ipsum", etc.
+   */
+  function showHtmlMode(pagePath: string) {
     isCanvasMode = false;
     body.classList.remove('canvas-mode');
     body.classList.add('html-mode');
     
     // Hide all pages first
-    Object.values(pageElements).forEach(el => {
-      if (el) el.classList.remove('active');
+    document.querySelectorAll('.page-content').forEach(el => {
+      el.classList.remove('active');
     });
     
-    // Show the requested page
-    const pageEl = pageElements[state];
+    // Convert path to page ID
+    // e.g., "about me" -> "page-about-me"
+    // e.g., "projects/lorem-ipsum" -> "page-projects-lorem-ipsum"
+    const pageId = 'page-' + pagePath.replace(/\s+/g, '-').replace(/\//g, '-');
+    const pageEl = document.getElementById(pageId);
+    
     if (pageEl) {
       pageEl.classList.add('active');
+    } else {
+      // Fallback: try the parent page for nested routes
+      const parentPath = pagePath.split('/')[0];
+      const parentId = 'page-' + parentPath.replace(/\s+/g, '-');
+      const parentEl = document.getElementById(parentId);
+      if (parentEl) {
+        parentEl.classList.add('active');
+      }
     }
   }
 
   // Load home page - animate on first visit, instant on return
   async function loadHomePage() {
-    currentState = 'home';
+    currentPath = 'home';
     showCanvasMode();
     renderer.clearUnderline();
     
-    // Ensure fonts are ready before rasterizing
     await document.fonts.ready;
     
     const page = PAGES['home'];
@@ -151,7 +153,6 @@ async function init() {
     simulation.setMaskFromImage(mask.data, mask.width, mask.height);
     
     if (hasVisitedHome) {
-      // Return visit: show everything instantly
       simulation.setComplete();
       renderer.enableWobble(performance.now() / 1000);
       menuLinks.forEach(link => link.classList.add('visible'));
@@ -159,7 +160,6 @@ async function init() {
       menuRevealed = true;
       isGrowing = false;
     } else {
-      // First visit: run the full animation
       hasVisitedHome = true;
       renderer.disableWobble();
       hideMenuLinks();
@@ -167,52 +167,89 @@ async function init() {
     }
   }
 
-  // Navigate to a page
-  function navigateTo(state: PageState) {
-    if (state === currentState) return;
+  /**
+   * Convert URL path to internal navigation path.
+   * e.g., "/about-me" -> "about me"
+   * e.g., "/writings/my-article" -> "writings/my-article"
+   */
+  function urlToNavPath(urlPath: string): string {
+    const clean = urlPath.replace(/^\/|\/$/g, '').toLowerCase();
+    if (!clean) return 'home';
     
-    currentState = state;
-    const url = state === 'home' ? '/' : `/${state.replace(' ', '-')}`;
-    history.pushState({ state }, '', url);
+    // Handle nested paths (keep the slash)
+    const parts = clean.split('/');
+    if (parts.length === 1) {
+      // Single segment - replace hyphens with spaces for known pages
+      return parts[0].replace(/-/g, ' ');
+    }
+    // Multi-segment path - keep as-is but replace hyphens in first segment
+    parts[0] = parts[0].replace(/-/g, ' ');
+    return parts.join('/');
+  }
+
+  /**
+   * Convert internal navigation path to URL.
+   * e.g., "about me" -> "/about-me"
+   * e.g., "writings/my-article" -> "/writings/my-article"
+   */
+  function navPathToUrl(navPath: string): string {
+    if (navPath === 'home') return '/';
+    // Replace spaces with hyphens
+    return '/' + navPath.replace(/\s+/g, '-');
+  }
+
+  /**
+   * Check if a path is the home page
+   */
+  function isHomePath(navPath: string): boolean {
+    return navPath === 'home' || navPath === '';
+  }
+
+  /**
+   * Navigate to a path (can be simple like "projects" or nested like "projects/lorem-ipsum")
+   */
+  function navigateTo(navPath: string) {
+    if (navPath === currentPath) return;
     
-    if (state === 'home') {
+    currentPath = navPath;
+    history.pushState({ path: navPath }, '', navPathToUrl(navPath));
+    
+    if (isHomePath(navPath)) {
       loadHomePage();
     } else {
-      showHtmlMode(state);
+      showHtmlMode(navPath);
     }
   }
 
   // Handle browser back/forward
   window.addEventListener('popstate', () => {
-    const path = window.location.pathname.replace(/^\/|\/$/g, '').toLowerCase().replace('-', ' ');
-    const state = (path in PAGES ? path : 'home') as PageState;
-    currentState = state;
+    const navPath = urlToNavPath(window.location.pathname);
+    currentPath = navPath;
     
-    if (state === 'home') {
+    if (isHomePath(navPath)) {
       loadHomePage();
     } else {
-      showHtmlMode(state);
+      showHtmlMode(navPath);
     }
   });
 
-  // Set up all navigation links (home menu + back links)
+  // Set up all navigation links (home menu + back links + item links)
   document.querySelectorAll('[data-nav]').forEach(link => {
     link.addEventListener('click', (e) => {
       e.preventDefault();
-      const target = (link as HTMLElement).dataset.nav as PageState;
+      const target = (link as HTMLElement).dataset.nav as string;
       navigateTo(target);
     });
   });
 
   // Initial page load based on URL
-  const initialPath = window.location.pathname.replace(/^\/|\/$/g, '').toLowerCase().replace('-', ' ');
-  const initialState = (initialPath in PAGES ? initialPath : 'home') as PageState;
+  const initialPath = urlToNavPath(window.location.pathname);
   
-  if (initialState === 'home') {
+  if (isHomePath(initialPath)) {
     await loadHomePage();
   } else {
-    currentState = initialState;
-    showHtmlMode(initialState);
+    currentPath = initialPath;
+    showHtmlMode(initialPath);
   }
 
   // Main loop (only renders when in canvas mode)

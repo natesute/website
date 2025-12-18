@@ -9,15 +9,15 @@
 
 ## Projects
 
-- **Lorem Ipsum**: Dolor sit amet consectetur
-- **Adipiscing Elit**: Sed do eiusmod tempor incididunt
+- [Lorem Ipsum](/projects/lorem-ipsum): Dolor sit amet consectetur
+- [Adipiscing Elit](/projects/adipiscing-elit): Sed do eiusmod tempor incididunt
 
 ## Writings
 
-- **Cupidatat Non Proident** (2024-02-20): Another post
-- **Excepteur Sint Occaecat** (2024-01-15): A brief introduction
+- [Cupidatat Non Proident](/writings/cupidatat) (Tue Feb 20 2024 11:00:00 GMT+1100 (Australian Eastern Daylight Time)): Another post
+- [Excepteur Sint Occaecat](/writings/excepteur-sint) (Mon Jan 15 2024 11:00:00 GMT+1100 (Australian Eastern Daylight Time)): A brief introduction
 
 ## Contact
 
-- Email: admin@mail.com
+- Email: admin@email.com
 - GitHub: github.com/mygithubusername
