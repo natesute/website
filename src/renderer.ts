@@ -13,6 +13,10 @@ export class Renderer {
   
   // Underline region (normalized coords): x, y, width, height
   private underlineRegion: [number, number, number, number] = [0, 0, 0, 0];
+  
+  // Controls whether the idle wobble/dithering effect is active
+  private wobbleEnabled: boolean = false;
+  private wobbleStartTime: number = 0;
 
   constructor(device: GPUDevice, format: GPUTextureFormat, simulation: GrowthSimulation) {
     this.device = device;
@@ -23,10 +27,10 @@ export class Renderer {
       code: renderShaderCode,
     });
 
-    // Uniform buffer: time, simWidth, simHeight, isGrowing, underline (x, y, w, h)
+    // Uniform buffer: time, simWidth, simHeight, wobbleEnabled, underline (x, y, w, h), canvasWidth, canvasHeight
     this.uniformBuffer = device.createBuffer({
       label: 'Render Uniforms',
-      size: 32, // 8 floats
+      size: 48, // 10 floats (padded to 12 for alignment)
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     });
 
@@ -56,9 +60,9 @@ export class Renderer {
       ],
     });
 
-    // Initial uniform values
+    // Initial uniform values (canvas dimensions will be set on first render)
     const { width, height } = simulation.getDimensions();
-    const uniformData = new Float32Array([0, width, height, 0, 0, 0, 0, 0]);
+    const uniformData = new Float32Array([0, width, height, 0, 0, 0, 0, 0, 1, 1, 0, 0]);
     device.queue.writeBuffer(this.uniformBuffer, 0, uniformData);
   }
 
@@ -74,6 +78,21 @@ export class Renderer {
    */
   clearUnderline() {
     this.underlineRegion = [0, 0, 0, 0];
+  }
+
+  /**
+   * Enable the idle wobble/dithering effect
+   */
+  enableWobble(currentTime: number) {
+    this.wobbleEnabled = true;
+    this.wobbleStartTime = currentTime;
+  }
+
+  /**
+   * Disable the idle wobble/dithering effect
+   */
+  disableWobble() {
+    this.wobbleEnabled = false;
   }
 
   /**
@@ -93,10 +112,13 @@ export class Renderer {
   /**
    * Render current state
    */
-  render(encoder: GPUCommandEncoder, view: GPUTextureView, time: number, _isGrowing: boolean) {
+  render(encoder: GPUCommandEncoder, view: GPUTextureView, time: number, _isGrowing: boolean, canvasWidth: number, canvasHeight: number) {
     const { width, height } = this.simulation.getDimensions();
     const [ux, uy, uw, uh] = this.underlineRegion;
-    const uniformData = new Float32Array([time, width, height, 0, ux, uy, uw, uh]);
+    const wobbleFlag = this.wobbleEnabled ? 1.0 : 0.0;
+    // Use time relative to when wobble started for consistent animation speed
+    const wobbleTime = this.wobbleEnabled ? (time - this.wobbleStartTime) : 0;
+    const uniformData = new Float32Array([wobbleTime, width, height, wobbleFlag, ux, uy, uw, uh, canvasWidth, canvasHeight, 0, 0]);
     this.device.queue.writeBuffer(this.uniformBuffer, 0, uniformData);
 
     const pass = encoder.beginRenderPass({
