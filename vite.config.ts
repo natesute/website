@@ -7,6 +7,8 @@ export default defineConfig({
   server: {
     port: 3000,
   },
+  // Handle SPA routing - serve index.html for all routes
+  appType: 'spa',
 });
 
 
