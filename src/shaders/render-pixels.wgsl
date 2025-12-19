@@ -42,25 +42,42 @@ fn hashTime(p: vec2<u32>, t: u32) -> f32 {
     return f32(h2 & 0xFFFFu) / 65535.0;
 }
 
-// Check if a grid cell contains a star and calculate its contribution
-fn getStarBrightness(cellX: i32, cellY: i32, pixelX: f32, pixelY: f32, time: f32, maxCellX: i32, maxCellY: i32) -> f32 {
+// Hash with generation for time-varying star positions
+fn hashGen(p: vec2<u32>, gen: u32) -> f32 {
+    let n = p.x * 127u + p.y * 311u + gen * 7919u + 104729u;
+    let h = n * 0xcc9e2d51u;
+    let h2 = h ^ (h >> 15u);
+    return f32(h2 & 0xFFFFu) / 65535.0;
+}
+
+// Check if a grid cell contains a star for a specific generation
+fn getStarBrightnessForGen(cellX: i32, cellY: i32, pixelX: f32, pixelY: f32, time: f32, maxCellX: i32, maxCellY: i32, gen: u32, genFade: f32) -> f32 {
     if (cellX < 0 || cellY < 0 || cellX >= maxCellX || cellY >= maxCellY) {
         return 0.0;
     }
     
-    let starSeed = hash(vec2<u32>(u32(cellX), u32(cellY)));
+    let starSeed = hashGen(vec2<u32>(u32(cellX), u32(cellY)), gen);
     
-    // ~0.045% can be stars (~18 potential positions)
+    // ~0.045% can be stars (~18 potential positions per generation)
     if (starSeed >= 0.00045) {
         return 0.0;
     }
+    
+    // Staggered initial emergence over first ~20 seconds
+    let birthTime = starSeed * 20000.0;
+    if (time < birthTime) {
+        return 0.0;
+    }
+    
+    // Fade in over 1 second after birth
+    let starAge = time - birthTime;
+    let initialFade = smoothstep(0.0, 1.0, starAge);
     
     // Star center is at cell center
     let starCenterX = f32(cellX) + 0.5;
     let starCenterY = f32(cellY) + 0.5;
     
     // Square distance (Chebyshev) - makes rectangular stars
-    // Scale X slightly to make stars a bit taller than wide
     let dx = abs(pixelX - starCenterX) * 1.15;
     let dy = abs(pixelY - starCenterY);
     let dist = max(dx, dy);
@@ -69,41 +86,44 @@ fn getStarBrightness(cellX: i32, cellY: i32, pixelX: f32, pixelY: f32, time: f32
     let sizeRand = fract(starSeed * 7919.0);
     var starRadius: f32;
     if (sizeRand < 0.85) {
-        starRadius = 0.45;  // Small stars (most common) - 1 pixel
+        starRadius = 0.45;
     } else {
-        starRadius = 0.6;   // Slightly larger - still small
+        starRadius = 0.6;
     }
     
-    // Skip if outside star radius - hard pixel edge, no blur
     if (dist > starRadius) {
         return 0.0;
     }
     
-    // Staggered emergence over ~20 seconds
-    let birthTime = starSeed * 22000.0;
-    if (time < birthTime) {
-        return 0.0;
-    }
-    
-    let starAge = time - birthTime;
-    
-    // Initial fade-in over 2 seconds
-    let initialFade = smoothstep(0.0, 2.0, starAge);
-    
-    // Animation phase
+    // Subtle shimmer while visible
     let starPhaseOffset = starSeed * 739.0;
-    let phase = fract((starAge * 0.1) + starPhaseOffset);
+    let shimmerSpeed = time * 3.5 + starPhaseOffset * 50.0;
+    let shimmer = 0.88 + 0.12 * sin(shimmerSpeed) + 0.05 * sin(shimmerSpeed * 2.3);
     
-    // Twinkle envelope
-    let fadeIn = smoothstep(0.0, 0.15, phase);
-    let fadeOut = smoothstep(1.0, 0.7, phase);
-    let twinkle = fadeIn * fadeOut;
+    return shimmer * genFade * initialFade;
+}
+
+// Get combined star brightness from overlapping generations
+fn getStarBrightness(cellX: i32, cellY: i32, pixelX: f32, pixelY: f32, time: f32, maxCellX: i32, maxCellY: i32) -> f32 {
+    // Stars cycle through generations - each generation lasts ~12 seconds
+    let genDuration = 12.0;
+    let genTime = time / genDuration;
+    let currentGen = u32(floor(genTime));
+    let genProgress = fract(genTime);
     
-    // Shimmer
-    let shimmer = 0.9 + 0.1 * sin(time * 2.0 + starPhaseOffset * 50.0);
+    // Crossfade between generations: current fades out, next fades in
+    // Use smooth S-curve for natural transition
+    let fadeOut = smoothstep(0.7, 1.0, genProgress);  // Current gen fades out in last 30%
+    let fadeIn = smoothstep(0.0, 0.3, genProgress);   // Next gen fades in during first 30%
     
-    // Hard-edged pixels: full brightness if inside, no falloff
-    return twinkle * shimmer * initialFade;
+    let currentFade = 1.0 - fadeOut;
+    let nextFade = fadeIn;
+    
+    // Get brightness from both generations
+    let b1 = getStarBrightnessForGen(cellX, cellY, pixelX, pixelY, time, maxCellX, maxCellY, currentGen, currentFade);
+    let b2 = getStarBrightnessForGen(cellX, cellY, pixelX, pixelY, time, maxCellX, maxCellY, currentGen + 1u, nextFade);
+    
+    return max(b1, b2);
 }
 
 // Twinkling star effect - uses aspect-corrected UVs for consistent star shapes

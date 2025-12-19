@@ -87,7 +87,7 @@ async function init() {
       menuLinks.forEach((link, index) => {
         const t = index / (menuLinks.length - 1);
         const easedT = t * t * t;
-        const delay = easedT * 400;
+        const delay = easedT * 450;
         setTimeout(() => {
           link.classList.add('visible');
         }, delay);
