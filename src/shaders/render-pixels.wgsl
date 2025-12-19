@@ -43,8 +43,8 @@ fn hashTime(p: vec2<u32>, t: u32) -> f32 {
 }
 
 // Check if a grid cell contains a star and calculate its contribution
-fn getStarBrightness(cellX: i32, cellY: i32, pixelX: f32, pixelY: f32, time: f32) -> f32 {
-    if (cellX < 0 || cellY < 0 || cellX >= 200 || cellY >= 200) {
+fn getStarBrightness(cellX: i32, cellY: i32, pixelX: f32, pixelY: f32, time: f32, maxCellX: i32, maxCellY: i32) -> f32 {
+    if (cellX < 0 || cellY < 0 || cellX >= maxCellX || cellY >= maxCellY) {
         return 0.0;
     }
     
@@ -106,25 +106,45 @@ fn getStarBrightness(cellX: i32, cellY: i32, pixelX: f32, pixelY: f32, time: f32
     return twinkle * shimmer * initialFade;
 }
 
-// Twinkling star effect - uses screen-space UVs for consistency
+// Twinkling star effect - uses aspect-corrected UVs for consistent star shapes
 fn calculateStar(screenUV: vec2<f32>, time: f32, void_black: vec3<f32>) -> vec4<f32> {
-    // Grid coordinates (200x200 grid)
-    let gridX = screenUV.x * 200.0;
-    let gridY = screenUV.y * 200.0;
+    // Apply aspect ratio correction so stars remain square (not stretched)
+    let canvasAspect = uniforms.canvasWidth / uniforms.canvasHeight;
+    
+    // Determine grid density based on the shorter dimension
+    // Use 200 cells along the shorter axis, scale the longer axis proportionally
+    var gridScaleX = 200.0;
+    var gridScaleY = 200.0;
+    
+    if (canvasAspect > 1.0) {
+        // Canvas is wider than tall - more cells horizontally
+        gridScaleX = 200.0 * canvasAspect;
+    } else {
+        // Canvas is taller than wide - more cells vertically
+        gridScaleY = 200.0 / canvasAspect;
+    }
+    
+    // Grid coordinates with aspect correction
+    let gridX = screenUV.x * gridScaleX;
+    let gridY = screenUV.y * gridScaleY;
     let cellX = i32(gridX);
     let cellY = i32(gridY);
     
+    // Grid bounds for star visibility
+    let maxCellX = i32(gridScaleX) + 1;
+    let maxCellY = i32(gridScaleY) + 1;
+    
     // Check current cell and 8 neighbors for stars (to catch larger stars)
     var brightness = 0.0;
-    brightness = max(brightness, getStarBrightness(cellX - 1, cellY - 1, gridX, gridY, time));
-    brightness = max(brightness, getStarBrightness(cellX,     cellY - 1, gridX, gridY, time));
-    brightness = max(brightness, getStarBrightness(cellX + 1, cellY - 1, gridX, gridY, time));
-    brightness = max(brightness, getStarBrightness(cellX - 1, cellY,     gridX, gridY, time));
-    brightness = max(brightness, getStarBrightness(cellX,     cellY,     gridX, gridY, time));
-    brightness = max(brightness, getStarBrightness(cellX + 1, cellY,     gridX, gridY, time));
-    brightness = max(brightness, getStarBrightness(cellX - 1, cellY + 1, gridX, gridY, time));
-    brightness = max(brightness, getStarBrightness(cellX,     cellY + 1, gridX, gridY, time));
-    brightness = max(brightness, getStarBrightness(cellX + 1, cellY + 1, gridX, gridY, time));
+    brightness = max(brightness, getStarBrightness(cellX - 1, cellY - 1, gridX, gridY, time, maxCellX, maxCellY));
+    brightness = max(brightness, getStarBrightness(cellX,     cellY - 1, gridX, gridY, time, maxCellX, maxCellY));
+    brightness = max(brightness, getStarBrightness(cellX + 1, cellY - 1, gridX, gridY, time, maxCellX, maxCellY));
+    brightness = max(brightness, getStarBrightness(cellX - 1, cellY,     gridX, gridY, time, maxCellX, maxCellY));
+    brightness = max(brightness, getStarBrightness(cellX,     cellY,     gridX, gridY, time, maxCellX, maxCellY));
+    brightness = max(brightness, getStarBrightness(cellX + 1, cellY,     gridX, gridY, time, maxCellX, maxCellY));
+    brightness = max(brightness, getStarBrightness(cellX - 1, cellY + 1, gridX, gridY, time, maxCellX, maxCellY));
+    brightness = max(brightness, getStarBrightness(cellX,     cellY + 1, gridX, gridY, time, maxCellX, maxCellY));
+    brightness = max(brightness, getStarBrightness(cellX + 1, cellY + 1, gridX, gridY, time, maxCellX, maxCellY));
     
     if (brightness < 0.01) {
         return vec4<f32>(void_black, 1.0);

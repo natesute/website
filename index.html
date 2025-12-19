@@ -73,15 +73,15 @@
 
     #home-menu a {
       font-family: 'Geo', sans-serif;
-      font-size: 1.2rem;
+      font-size: clamp(1rem, 1.5vw, 1.5rem);
       font-style: normal;
       color: #e8e4de;
       text-decoration: none;
       opacity: 0;
       display: block;
-      width: 8rem;
+      width: clamp(7rem, 12vw, 12rem);
       text-align: center;
-      padding: 0.35rem 0.75rem;
+      padding: clamp(0.3rem, 0.6vw, 0.6rem) clamp(0.6rem, 1vw, 1.2rem);
       border: 1px solid #444;
       background: transparent;
       transition: opacity 0.1s, background-color 0.15s, color 0.15s, text-shadow 0.15s;
@@ -105,9 +105,9 @@
     }
 
     #home-menu a:nth-child(1) { margin-left: 0; }
-    #home-menu a:nth-child(2) { margin-left: 0.6rem; }
-    #home-menu a:nth-child(3) { margin-left: 1.2rem; }
-    #home-menu a:nth-child(4) { margin-left: 1.8rem; }
+    #home-menu a:nth-child(2) { margin-left: clamp(0.5rem, 1vw, 1rem); }
+    #home-menu a:nth-child(3) { margin-left: clamp(1rem, 2vw, 2rem); }
+    #home-menu a:nth-child(4) { margin-left: clamp(1.5rem, 3vw, 3rem); }
 
     body.html-mode #home-menu {
       display: none;
