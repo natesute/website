@@ -44,14 +44,14 @@
       top: 0;
       left: 0;
       width: 100%;
-      height: 100%;
+      height: calc(100% + 15vh);  /* Extra height so stars cover bottom when shifted */
       display: block;
       transform: translateY(0);
       transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     #canvas.shifted-up {
-      transform: translateY(-15%);
+      transform: translateY(-15vh);  /* Use vh to match the extra height */
     }
 
     body.html-mode #canvas {

@@ -42,6 +42,100 @@ fn hashTime(p: vec2<u32>, t: u32) -> f32 {
     return f32(h2 & 0xFFFFu) / 65535.0;
 }
 
+// Check if a grid cell contains a star and calculate its contribution
+fn getStarBrightness(cellX: i32, cellY: i32, pixelX: f32, pixelY: f32, time: f32) -> f32 {
+    if (cellX < 0 || cellY < 0 || cellX >= 200 || cellY >= 200) {
+        return 0.0;
+    }
+    
+    let starSeed = hash(vec2<u32>(u32(cellX), u32(cellY)));
+    
+    // ~0.045% can be stars (~18 potential positions)
+    if (starSeed >= 0.00045) {
+        return 0.0;
+    }
+    
+    // Star center is at cell center
+    let starCenterX = f32(cellX) + 0.5;
+    let starCenterY = f32(cellY) + 0.5;
+    
+    // Square distance (Chebyshev) - makes rectangular stars
+    // Scale X slightly to make stars a bit taller than wide
+    let dx = abs(pixelX - starCenterX) * 1.15;
+    let dy = abs(pixelY - starCenterY);
+    let dist = max(dx, dy);
+    
+    // Star size: mostly 1 pixel, occasionally slightly larger
+    let sizeRand = fract(starSeed * 7919.0);
+    var starRadius: f32;
+    if (sizeRand < 0.85) {
+        starRadius = 0.45;  // Small stars (most common) - 1 pixel
+    } else {
+        starRadius = 0.6;   // Slightly larger - still small
+    }
+    
+    // Skip if outside star radius - hard pixel edge, no blur
+    if (dist > starRadius) {
+        return 0.0;
+    }
+    
+    // Staggered emergence over ~20 seconds
+    let birthTime = starSeed * 22000.0;
+    if (time < birthTime) {
+        return 0.0;
+    }
+    
+    let starAge = time - birthTime;
+    
+    // Initial fade-in over 2 seconds
+    let initialFade = smoothstep(0.0, 2.0, starAge);
+    
+    // Animation phase
+    let starPhaseOffset = starSeed * 739.0;
+    let phase = fract((starAge * 0.1) + starPhaseOffset);
+    
+    // Twinkle envelope
+    let fadeIn = smoothstep(0.0, 0.15, phase);
+    let fadeOut = smoothstep(1.0, 0.7, phase);
+    let twinkle = fadeIn * fadeOut;
+    
+    // Shimmer
+    let shimmer = 0.9 + 0.1 * sin(time * 2.0 + starPhaseOffset * 50.0);
+    
+    // Hard-edged pixels: full brightness if inside, no falloff
+    return twinkle * shimmer * initialFade;
+}
+
+// Twinkling star effect - uses screen-space UVs for consistency
+fn calculateStar(screenUV: vec2<f32>, time: f32, void_black: vec3<f32>) -> vec4<f32> {
+    // Grid coordinates (200x200 grid)
+    let gridX = screenUV.x * 200.0;
+    let gridY = screenUV.y * 200.0;
+    let cellX = i32(gridX);
+    let cellY = i32(gridY);
+    
+    // Check current cell and 8 neighbors for stars (to catch larger stars)
+    var brightness = 0.0;
+    brightness = max(brightness, getStarBrightness(cellX - 1, cellY - 1, gridX, gridY, time));
+    brightness = max(brightness, getStarBrightness(cellX,     cellY - 1, gridX, gridY, time));
+    brightness = max(brightness, getStarBrightness(cellX + 1, cellY - 1, gridX, gridY, time));
+    brightness = max(brightness, getStarBrightness(cellX - 1, cellY,     gridX, gridY, time));
+    brightness = max(brightness, getStarBrightness(cellX,     cellY,     gridX, gridY, time));
+    brightness = max(brightness, getStarBrightness(cellX + 1, cellY,     gridX, gridY, time));
+    brightness = max(brightness, getStarBrightness(cellX - 1, cellY + 1, gridX, gridY, time));
+    brightness = max(brightness, getStarBrightness(cellX,     cellY + 1, gridX, gridY, time));
+    brightness = max(brightness, getStarBrightness(cellX + 1, cellY + 1, gridX, gridY, time));
+    
+    if (brightness < 0.01) {
+        return vec4<f32>(void_black, 1.0);
+    }
+    
+    // Soft blue-white star color
+    let starColor = vec3<f32>(0.75, 0.82, 0.92);
+    let finalColor = mix(void_black, starColor, brightness * 0.85);
+    return vec4<f32>(finalColor, 1.0);
+}
+
 @vertex
 fn vertexMain(@builtin(vertex_index) vertexIndex: u32) -> VertexOutput {
     var positions = array<vec2<f32>, 4>(
@@ -90,8 +184,14 @@ fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
         uv.y = (uv.y - 0.5) * scale + 0.5;
     }
     
-    // If outside the simulation bounds, show background
+    // Shift simulation content up to compensate for extra canvas height
+    uv.y = uv.y + 0.07;
+    
+    // If outside the simulation bounds, show background (with stars if enabled)
     if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
+        if (uniforms.wobbleEnabled > 0.5) {
+            return calculateStar(input.uv, uniforms.time, void_black);
+        }
         return vec4<f32>(void_black, 1.0);
     }
     
@@ -139,6 +239,10 @@ fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
     let age = cellState.y;
     
     if (!isOn) {
+        // Twinkling stars on background pixels (uses screen-space for consistency)
+        if (uniforms.wobbleEnabled > 0.5) {
+            return calculateStar(input.uv, uniforms.time, void_black);
+        }
         return vec4<f32>(void_black, 1.0);
     }
     

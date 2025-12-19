@@ -37,7 +37,7 @@ async function init() {
   function resize() {
     const dpr = Math.min(window.devicePixelRatio, 2);
     canvas.width = window.innerWidth * dpr;
-    canvas.height = window.innerHeight * dpr;
+    canvas.height = (window.innerHeight + window.innerHeight * 0.15) * dpr;  // 100% + 15vh to cover bottom when shifted
     context!.configure({
       device,
       format,
