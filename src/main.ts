@@ -251,10 +251,11 @@ async function init() {
         simulation.step();
       }
 
-      if (simulation.getIsComplete()) {
+      if (simulation.getIsComplete() && isGrowing) {
         isGrowing = false;
         renderer.enableWobble(time / 1000);
-        shiftUpAndRevealMenu();
+        // Delay shift so wobble is visible first
+        setTimeout(() => shiftUpAndRevealMenu(), 800);
       }
 
       const stillGrowing = isGrowing && !simulation.getIsComplete();
