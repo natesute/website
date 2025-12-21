@@ -1,43 +1,68 @@
 import { GrowthSimulation } from './simulation/growth-simulation';
+import { CanvasGrowthSimulation } from './simulation/canvas-growth-simulation';
 import { Renderer } from './renderer';
+import { CanvasRenderer } from './canvas-renderer';
 import { GlyphRasterizer } from './typography/rasterizer';
 import { PAGES } from './content/pages';
 import { loadFonts } from './typography/fonts';
 
-async function init() {
-  const canvas = document.getElementById('canvas') as HTMLCanvasElement;
-  const fallback = document.getElementById('fallback') as HTMLDivElement;
-  const body = document.body;
+/**
+ * Common interface for both WebGPU and Canvas 2D rendering paths.
+ * Enables shared navigation and animation logic.
+ */
+interface RenderContext {
+  simulation: {
+    setMaskFromImage: (data: Uint8ClampedArray, width: number, height: number) => void;
+    setComplete: () => void;
+    getIsComplete: () => boolean;
+    step: () => void;
+    getDimensions: () => { width: number; height: number };
+  };
+  renderer: {
+    enableWobble: (time: number) => void;
+    disableWobble: () => void;
+    clearUnderline: () => void;
+  };
+  render: (time: number, isGrowing: boolean) => void;
+  resize: () => void;
+}
 
-  // Check WebGPU support
+/**
+ * Initialize WebGPU rendering path.
+ * Returns null if WebGPU is not available.
+ */
+async function initWebGPU(canvas: HTMLCanvasElement): Promise<RenderContext | null> {
   if (!navigator.gpu) {
-    fallback.classList.add('active');
-    console.error('WebGPU not supported');
-    return;
+    console.log('WebGPU not available, falling back to Canvas 2D');
+    return null;
   }
 
   const adapter = await navigator.gpu.requestAdapter();
   if (!adapter) {
-    fallback.classList.add('active');
-    console.error('No GPU adapter found');
-    return;
+    console.log('No GPU adapter found, falling back to Canvas 2D');
+    return null;
   }
 
-  const device = await adapter.requestDevice();
+  let device: GPUDevice;
+  try {
+    device = await adapter.requestDevice();
+  } catch {
+    console.log('Failed to create GPU device, falling back to Canvas 2D');
+    return null;
+  }
 
   const context = canvas.getContext('webgpu');
   if (!context) {
-    fallback.classList.add('active');
-    console.error('Could not get WebGPU context');
-    return;
+    console.log('Could not get WebGPU context, falling back to Canvas 2D');
+    return null;
   }
 
   const format = navigator.gpu.getPreferredCanvasFormat();
-  
+
   function resize() {
     const dpr = Math.min(window.devicePixelRatio, 2);
     canvas.width = window.innerWidth * dpr;
-    canvas.height = (window.innerHeight + window.innerHeight * 0.15) * dpr;  // 100% + 15vh to cover bottom when shifted
+    canvas.height = (window.innerHeight + window.innerHeight * 0.15) * dpr;
     context!.configure({
       device,
       format,
@@ -46,43 +71,118 @@ async function init() {
   }
 
   resize();
-  window.addEventListener('resize', resize);
 
-  await loadFonts();
-
-  // Grid size
   const simWidth = 512;
   const simHeight = 512;
   const simulation = new GrowthSimulation(device, simWidth, simHeight);
   const renderer = new Renderer(device, format, simulation);
+
+  return {
+    simulation,
+    renderer,
+    resize,
+    render: (time: number, isGrowing: boolean) => {
+      renderer.updateBindGroup();
+      const commandEncoder = device.createCommandEncoder();
+      renderer.render(
+        commandEncoder,
+        context!.getCurrentTexture().createView(),
+        time / 1000,
+        isGrowing,
+        canvas.width,
+        canvas.height
+      );
+      device.queue.submit([commandEncoder.finish()]);
+    },
+  };
+}
+
+/**
+ * Initialize Canvas 2D fallback rendering path.
+ */
+function initCanvas2D(canvas: HTMLCanvasElement): RenderContext {
+  const ctx = canvas.getContext('2d')!;
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio, 2);
+    canvas.width = window.innerWidth * dpr;
+    canvas.height = (window.innerHeight + window.innerHeight * 0.15) * dpr;
+  }
+
+  resize();
+
+  const simWidth = 512;
+  const simHeight = 512;
+  const simulation = new CanvasGrowthSimulation(simWidth, simHeight);
+  const renderer = new CanvasRenderer(ctx, simulation);
+
+  return {
+    simulation,
+    renderer,
+    resize,
+    render: (time: number, isGrowing: boolean) => {
+      renderer.render(time / 1000, isGrowing, canvas.width, canvas.height);
+    },
+  };
+}
+
+async function init() {
+  const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+  const fallback = document.getElementById('fallback') as HTMLDivElement;
+  const body = document.body;
+
+  // Check for force-canvas query param (for testing fallback)
+  const forceCanvas = new URLSearchParams(window.location.search).has('canvas');
+
+  // Try WebGPU first, fall back to Canvas 2D
+  let renderContext = forceCanvas ? null : await initWebGPU(canvas);
+
+  if (!renderContext) {
+    // Use Canvas 2D fallback
+    renderContext = initCanvas2D(canvas);
+    console.log('Using Canvas 2D fallback renderer');
+  } else {
+    console.log('Using WebGPU renderer');
+  }
+
+  // Hide the "not supported" fallback since we have Canvas 2D now
+  fallback.style.display = 'none';
+
+  const { simulation, renderer, resize, render } = renderContext;
+
+  window.addEventListener('resize', resize);
+
+  await loadFonts();
+
+  const { width: simWidth, height: simHeight } = simulation.getDimensions();
   const rasterizer = new GlyphRasterizer(simWidth, simHeight);
-  
+
   // Current navigation path (e.g., "home", "projects", "projects/lorem-ipsum")
   let currentPath = 'home';
   let isGrowing = false;
   let isCanvasMode = true;
   let menuRevealed = false;
   let hasVisitedHome = false;
-  
+
   // Menu links for staggered reveal
   const menuLinks = document.querySelectorAll('#home-menu a');
-  
+
   function hideMenuLinks() {
     menuRevealed = false;
     menuLinks.forEach(link => link.classList.remove('visible'));
     canvas.classList.remove('shifted-up');
   }
-  
+
   function shiftUpAndRevealMenu() {
     if (menuRevealed) return;
     menuRevealed = true;
-    
+
     canvas.classList.add('shifted-up');
-    
+
     setTimeout(() => {
       renderer.enableWobble(performance.now() / 1000);
     }, 1300);
-    
+
     setTimeout(() => {
       menuLinks.forEach((link, index) => {
         const t = index / (menuLinks.length - 1);
@@ -100,7 +200,7 @@ async function init() {
     isCanvasMode = true;
     body.classList.remove('html-mode');
     body.classList.add('canvas-mode');
-    
+
     // Hide all HTML pages
     document.querySelectorAll('.page-content').forEach(el => {
       el.classList.remove('active');
@@ -115,18 +215,18 @@ async function init() {
     isCanvasMode = false;
     body.classList.remove('canvas-mode');
     body.classList.add('html-mode');
-    
+
     // Hide all pages first
     document.querySelectorAll('.page-content').forEach(el => {
       el.classList.remove('active');
     });
-    
+
     // Convert path to page ID
     // e.g., "about me" -> "page-about-me"
     // e.g., "projects/lorem-ipsum" -> "page-projects-lorem-ipsum"
     const pageId = 'page-' + pagePath.replace(/\s+/g, '-').replace(/\//g, '-');
     const pageEl = document.getElementById(pageId);
-    
+
     if (pageEl) {
       pageEl.classList.add('active');
     } else {
@@ -145,13 +245,13 @@ async function init() {
     currentPath = 'home';
     showCanvasMode();
     renderer.clearUnderline();
-    
+
     await document.fonts.ready;
-    
+
     const page = PAGES['home'];
     const mask = rasterizer.rasterizePage(page);
     simulation.setMaskFromImage(mask.data, mask.width, mask.height);
-    
+
     if (hasVisitedHome) {
       simulation.setComplete();
       renderer.enableWobble(performance.now() / 1000);
@@ -175,7 +275,7 @@ async function init() {
   function urlToNavPath(urlPath: string): string {
     const clean = urlPath.replace(/^\/|\/$/g, '').toLowerCase();
     if (!clean) return 'home';
-    
+
     // Handle nested paths (keep the slash)
     const parts = clean.split('/');
     if (parts.length === 1) {
@@ -210,10 +310,10 @@ async function init() {
    */
   function navigateTo(navPath: string) {
     if (navPath === currentPath) return;
-    
+
     currentPath = navPath;
     history.pushState({ path: navPath }, '', navPathToUrl(navPath));
-    
+
     if (isHomePath(navPath)) {
       loadHomePage();
     } else {
@@ -225,7 +325,7 @@ async function init() {
   window.addEventListener('popstate', () => {
     const navPath = urlToNavPath(window.location.pathname);
     currentPath = navPath;
-    
+
     if (isHomePath(navPath)) {
       loadHomePage();
     } else {
@@ -244,7 +344,7 @@ async function init() {
 
   // Initial page load based on URL
   const initialPath = urlToNavPath(window.location.pathname);
-  
+
   if (isHomePath(initialPath)) {
     await loadHomePage();
   } else {
@@ -261,18 +361,14 @@ async function init() {
       if (isGrowing && !simulation.getIsComplete() && frameCount % 2 === 0) {
         simulation.step();
       }
-      
+
       if (simulation.getIsComplete()) {
         isGrowing = false;
         shiftUpAndRevealMenu();
       }
 
-      renderer.updateBindGroup();
-
-      const commandEncoder = device.createCommandEncoder();
       const stillGrowing = isGrowing && !simulation.getIsComplete();
-      renderer.render(commandEncoder, context!.getCurrentTexture().createView(), time / 1000, stillGrowing, canvas.width, canvas.height);
-      device.queue.submit([commandEncoder.finish()]);
+      render(time, stillGrowing);
     }
 
     requestAnimationFrame(frame);
