@@ -89,10 +89,12 @@ export function initCursorTrail(): void {
   
   document.addEventListener('touchend', () => {
     isActive = false;
+    particles = []; // Clear all particles immediately on touch end
   }, { passive: true });
   
   document.addEventListener('touchcancel', () => {
     isActive = false;
+    particles = []; // Clear all particles immediately on touch cancel
   }, { passive: true });
   
   // Start animation loop
