@@ -162,7 +162,7 @@ function handleMouseEnter(element: HTMLElement, state: PixelState): void {
   animateFill(element, state);
 }
 
-function handleMouseLeave(element: HTMLElement, state: PixelState): void {
+function handleMouseLeave(_element: HTMLElement, state: PixelState): void {
   state.isHovering = false;
   
   // Cancel animations
