@@ -245,14 +245,18 @@ async function init() {
   }
 
   // Main loop (only renders when in canvas mode)
-  let frameCount = 0;
+  // Use time-based stepping for consistent speed across frame rates
+  const STEP_INTERVAL = 67; // ms between steps (~15 steps/second)
+  let lastStepTime = 0;
+  
   function frame(time: number) {
     if (isCanvasMode) {
-      frameCount++;
-      
-      // Step every 4 frames for slower animation
-      if (isGrowing && !simulation.getIsComplete() && frameCount % 4 === 0) {
-        simulation.step();
+      // Time-based stepping for consistent animation speed
+      if (isGrowing && !simulation.getIsComplete()) {
+        if (time - lastStepTime >= STEP_INTERVAL) {
+          simulation.step();
+          lastStepTime = time;
+        }
       }
 
       if (simulation.getIsComplete() && isGrowing) {
