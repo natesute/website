@@ -31,7 +31,7 @@ let animationId: number | null = null;
 export function initCursorTrail(): void {
   if (canvas) return; // Already initialized
   
-  // Create fullscreen canvas
+  // Create fullscreen canvas with color inversion blend mode
   canvas = document.createElement('canvas');
   canvas.style.cssText = `
     position: fixed;
@@ -41,6 +41,7 @@ export function initCursorTrail(): void {
     height: 100%;
     pointer-events: none;
     z-index: 9999;
+    mix-blend-mode: difference;
   `;
   document.body.appendChild(canvas);
   
