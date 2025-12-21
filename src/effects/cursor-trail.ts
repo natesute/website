@@ -116,9 +116,9 @@ export function initCursorTrail(): void {
         continue;
       }
       
-      // Calculate opacity based on remaining life
+      // Calculate opacity - stay full for most of life, then fade at the end
       const lifeRatio = 1 - (p.life / p.maxLife);
-      const opacity = lifeRatio * lifeRatio; // Ease out
+      const opacity = Math.min(1, lifeRatio * 2); // Full opacity until 50% life, then fade
       
       ctx.globalAlpha = opacity;
       ctx.fillRect(p.x, p.y, p.size, p.size);
