@@ -124,9 +124,10 @@ function updateCanvasSize(element: HTMLElement, state: PixelState): void {
   state.rows = Math.ceil(state.height / state.pixelSize);
   
   // Set bitmap dimensions to match display size × pixel ratio
+  // Note: setting canvas.width/height resets the context transform
   state.canvas.width = state.width * dpr;
   state.canvas.height = state.height * dpr;
-  state.ctx.scale(dpr, dpr);
+  state.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   
   // Reset pixel array
   state.pixels = new Array(state.cols * state.rows).fill(false);
