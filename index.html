@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" translate="no">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="google" content="notranslate">
   <title>Nathan's Web Page</title>
   <meta name="description" content="Personal website of Nathan Suttie">
   <link rel="icon" type="image/png" href="/favicon.png">
@@ -79,27 +80,23 @@
       color: #e8e4de;
       text-decoration: none;
       opacity: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: block;
       width: 8rem;
       text-align: center;
       padding: 0.35rem 0.75rem;
       border: 1px solid #444;
       background: transparent;
-      transition: opacity 0.1s, color 0.15s, text-shadow 0.15s, border-color 0.15s;
+      transition: opacity 0.1s, background-color 0.15s, color 0.15s, text-shadow 0.15s;
       cursor: pointer;
-      position: relative;
-      overflow: hidden;
-    }
-
-    /* Text needs to be above the pixel canvas */
-    #home-menu a span {
-      position: relative;
-      z-index: 1;
     }
 
     #home-menu a:hover {
+      background: repeating-linear-gradient(
+        to bottom,
+        #e8e4de 0px 2px,
+        transparent 2px 4px
+      );
+      background-size: 100% 4px;
       color: #101216;
       text-shadow: 1px 1px 0 #ffffff;
       border-color: #e8e4de;
@@ -247,12 +244,16 @@
       border: 1px solid #444;
       background: transparent;
       text-decoration: none;
-      transition: border-color 0.15s;
-      position: relative;
-      overflow: hidden;
+      transition: background-color 0.15s, border-color 0.15s;
     }
 
     .page-content a.list-item:hover {
+      background: repeating-linear-gradient(
+        to bottom,
+        #e8e4de 0px 2px,
+        transparent 2px 4px
+      );
+      background-size: 100% 4px;
       border-color: #e8e4de;
     }
 
@@ -271,16 +272,12 @@
       font-weight: 400;
       color: #e8e4de;
       margin-bottom: 0.25rem;
-      position: relative;
-      z-index: 1; /* Above pixel canvas */
     }
 
     .page-content .item-meta {
       font-family: 'Geo', sans-serif;
       font-size: 0.9rem;
       color: #888;
-      position: relative;
-      z-index: 1; /* Above pixel canvas */
     }
 
     .page-content .contact-item {
