@@ -22,8 +22,8 @@ async function init() {
   
   resize();
   
-  const simWidth = 512;
-  const simHeight = 512;
+  const simWidth = 256;
+  const simHeight = 256;
   const simulation = new CanvasGrowthSimulation(simWidth, simHeight);
   const renderer = new CanvasRenderer(ctx, simulation);
   
