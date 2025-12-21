@@ -5,6 +5,7 @@ import { GlyphRasterizer } from './typography/rasterizer';
 import { PAGES } from './content/pages';
 import { loadFonts } from './typography/fonts';
 import { initAllPixelHovers, recheckAllHoverStates } from './effects/pixel-hover';
+import { initCursorTrail } from './effects/cursor-trail';
 
 async function init() {
   const canvas = document.getElementById('canvas') as HTMLCanvasElement;
@@ -52,6 +53,9 @@ async function init() {
 
   // Initialize pixel hover effect on interactive elements
   initAllPixelHovers();
+  
+  // Initialize cursor trail effect
+  initCursorTrail();
 
   function hideMenuLinks() {
     menuRevealed = false;
