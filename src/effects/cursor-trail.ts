@@ -12,8 +12,8 @@ interface Particle {
 }
 
 const PIXEL_SIZE = 4;
-const SPAWN_RATE = 3; // Particles per frame
-const SPAWN_RADIUS = 20; // Pixels spawn within this radius of cursor
+const SPAWN_RATE = 6; // Particles per frame (increased for density)
+const SPAWN_RADIUS = 12; // Pixels spawn within this radius of cursor (tighter)
 const MAX_LIFE = 400; // Max lifetime in ms
 const MIN_LIFE = 150; // Min lifetime in ms
 
@@ -69,6 +69,31 @@ export function initCursorTrail(): void {
   document.addEventListener('mouseleave', () => {
     isActive = false;
   });
+  
+  // Touch support for iOS - activate on touch, deactivate on release
+  document.addEventListener('touchstart', (e) => {
+    if (e.touches.length > 0) {
+      mouseX = e.touches[0].clientX;
+      mouseY = e.touches[0].clientY;
+      isActive = true;
+    }
+  }, { passive: true });
+  
+  document.addEventListener('touchmove', (e) => {
+    if (e.touches.length > 0) {
+      mouseX = e.touches[0].clientX;
+      mouseY = e.touches[0].clientY;
+      isActive = true;
+    }
+  }, { passive: true });
+  
+  document.addEventListener('touchend', () => {
+    isActive = false;
+  }, { passive: true });
+  
+  document.addEventListener('touchcancel', () => {
+    isActive = false;
+  }, { passive: true });
   
   // Start animation loop
   let lastTime = performance.now();

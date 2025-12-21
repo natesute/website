@@ -1,6 +1,6 @@
 /**
  * Pixelation hover effect.
- * On hover: white pixels randomly appear until box is fully white.
+ * On hover: box instantly fills with white.
  */
 
 interface PixelState {
@@ -14,11 +14,9 @@ interface PixelState {
   pixelSize: number;
   isHovering: boolean;
   isFilled: boolean;
-  fillAnimationId: number | null;
 }
 
 const PIXEL_SIZE = 4; // Size of each "pixel" in the effect
-const FILL_SPEED = 0.30; // Percentage of pixels to fill per frame (0-1)
 
 const states = new WeakMap<HTMLElement, PixelState>();
 
@@ -71,7 +69,6 @@ export function initPixelHover(element: HTMLElement): void {
     pixelSize: PIXEL_SIZE,
     isHovering: false,
     isFilled: false,
-    fillAnimationId: null,
   };
 
   states.set(element, state);
@@ -113,7 +110,7 @@ function checkInitialHover(element: HTMLElement, state: PixelState): void {
   }
 }
 
-function updateCanvasSize(element: HTMLElement, state: PixelState): void {
+function updateCanvasSize(_element: HTMLElement, state: PixelState): void {
   // Get actual rendered size of the canvas element (CSS handles the sizing via 100%)
   const rect = state.canvas.getBoundingClientRect();
   const dpr = window.devicePixelRatio || 1;
@@ -133,31 +130,19 @@ function updateCanvasSize(element: HTMLElement, state: PixelState): void {
   state.pixels = new Array(state.cols * state.rows).fill(false);
   state.isFilled = false;
   
-  // If hovering, restart fill animation (handles resize during hover)
+  // If hovering, refill (handles resize during hover)
   if (state.isHovering) {
-    if (state.fillAnimationId) cancelAnimationFrame(state.fillAnimationId);
-    animateFill(element, state);
+    fillInstantly(state);
   }
 }
 
-function handleMouseEnter(element: HTMLElement, state: PixelState): void {
+function handleMouseEnter(_element: HTMLElement, state: PixelState): void {
   state.isHovering = true;
-  
-  // Cancel any existing animation
-  if (state.fillAnimationId) cancelAnimationFrame(state.fillAnimationId);
-  
-  // Start fill animation
-  animateFill(element, state);
+  fillInstantly(state);
 }
 
 function handleMouseLeave(_element: HTMLElement, state: PixelState): void {
   state.isHovering = false;
-  
-  // Cancel animation
-  if (state.fillAnimationId) {
-    cancelAnimationFrame(state.fillAnimationId);
-    state.fillAnimationId = null;
-  }
   
   // Clear canvas and reset state
   state.ctx.clearRect(0, 0, state.width, state.height);
@@ -165,34 +150,11 @@ function handleMouseLeave(_element: HTMLElement, state: PixelState): void {
   state.isFilled = false;
 }
 
-function animateFill(element: HTMLElement, state: PixelState): void {
-  if (!state.isHovering) return;
-  
-  const totalPixels = state.pixels.length;
-  const unfilledIndices: number[] = [];
-  
-  // Find unfilled pixels
-  for (let i = 0; i < totalPixels; i++) {
-    if (!state.pixels[i]) unfilledIndices.push(i);
-  }
-  
-  if (unfilledIndices.length === 0) {
-    // Fully filled - stay filled (no crackle effect)
-    state.isFilled = true;
-    return;
-  }
-  
-  // Fill a random subset of pixels
-  const pixelsToFill = Math.max(1, Math.ceil(totalPixels * FILL_SPEED));
-  shuffleArray(unfilledIndices);
-  
-  for (let i = 0; i < Math.min(pixelsToFill, unfilledIndices.length); i++) {
-    state.pixels[unfilledIndices[i]] = true;
-  }
-  
+function fillInstantly(state: PixelState): void {
+  // Fill all pixels immediately
+  state.pixels.fill(true);
+  state.isFilled = true;
   render(state);
-  
-  state.fillAnimationId = requestAnimationFrame(() => animateFill(element, state));
 }
 
 function render(state: PixelState): void {
@@ -215,13 +177,6 @@ function render(state: PixelState): void {
         ctx.fillRect(x, y, pixelSize + overlap, pixelSize + overlap);
       }
     }
-  }
-}
-
-function shuffleArray<T>(array: T[]): void {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
   }
 }
 
