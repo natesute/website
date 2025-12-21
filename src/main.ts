@@ -137,10 +137,12 @@ async function init() {
 
   // Try WebGPU first, fall back to Canvas 2D
   let renderContext = forceCanvas ? null : await initWebGPU(canvas);
+  let isCanvasRenderer = false;
 
   if (!renderContext) {
     // Use Canvas 2D fallback
     renderContext = initCanvas2D(canvas);
+    isCanvasRenderer = true;
     console.log('Using Canvas 2D fallback renderer');
   } else {
     console.log('Using WebGPU renderer');
@@ -364,11 +366,14 @@ async function init() {
 
   // Main loop (only renders when in canvas mode)
   let frameCount = 0;
+  // Canvas 2D steps every frame; WebGPU steps every 2 frames (GPU is faster)
+  const stepInterval = isCanvasRenderer ? 1 : 2;
+  
   function frame(time: number) {
     if (isCanvasMode) {
       frameCount++;
 
-      if (isGrowing && !simulation.getIsComplete() && frameCount % 2 === 0) {
+      if (isGrowing && !simulation.getIsComplete() && frameCount % stepInterval === 0) {
         simulation.step();
       }
 
