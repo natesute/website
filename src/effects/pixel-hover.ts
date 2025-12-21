@@ -264,21 +264,28 @@ function getRandomIndex(total: number): number {
 }
 
 function render(state: PixelState): void {
-  const { ctx, pixels, cols, pixelSize, cracklePixels, width, height } = state;
+  const { ctx, pixels, cols, pixelSize, cracklePixels, width, height, isFilled } = state;
   
   ctx.clearRect(0, 0, width, height);
   
-  // Draw white pixels
-  ctx.fillStyle = '#e8e4de';
-  for (let i = 0; i < pixels.length; i++) {
-    if (pixels[i] && !cracklePixels.has(i)) {
-      const x = (i % cols) * pixelSize;
-      const y = Math.floor(i / cols) * pixelSize;
-      ctx.fillRect(x, y, pixelSize, pixelSize);
+  if (isFilled) {
+    // When fully filled, draw solid background to avoid sub-pixel gaps
+    ctx.fillStyle = '#e8e4de';
+    ctx.fillRect(0, 0, width, height);
+  } else {
+    // During fill animation, draw individual pixels with slight overlap to prevent gaps
+    ctx.fillStyle = '#e8e4de';
+    const overlap = 0.5;
+    for (let i = 0; i < pixels.length; i++) {
+      if (pixels[i]) {
+        const x = (i % cols) * pixelSize;
+        const y = Math.floor(i / cols) * pixelSize;
+        ctx.fillRect(x, y, pixelSize + overlap, pixelSize + overlap);
+      }
     }
   }
   
-  // Draw black crackle pixels (on top of white background)
+  // Draw black crackle pixels on top
   if (cracklePixels.size > 0) {
     ctx.fillStyle = '#101216';
     for (const idx of cracklePixels.keys()) {
