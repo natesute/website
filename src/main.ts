@@ -250,8 +250,8 @@ async function init() {
     if (isCanvasMode) {
       frameCount++;
       
-      // Step every 2 frames for slower animation
-      if (isGrowing && !simulation.getIsComplete() && frameCount % 2 === 0) {
+      // Step every 4 frames for slower animation
+      if (isGrowing && !simulation.getIsComplete() && frameCount % 4 === 0) {
         simulation.step();
       }
 
