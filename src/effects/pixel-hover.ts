@@ -114,18 +114,18 @@ function checkInitialHover(element: HTMLElement, state: PixelState): void {
 }
 
 function updateCanvasSize(element: HTMLElement, state: PixelState): void {
-  // Use clientWidth/Height to exclude border (canvas is positioned inside border)
+  // Get actual rendered size of the canvas element (CSS handles the sizing via 100%)
+  const rect = state.canvas.getBoundingClientRect();
   const dpr = window.devicePixelRatio || 1;
   
-  state.width = element.clientWidth;
-  state.height = element.clientHeight;
+  state.width = rect.width;
+  state.height = rect.height;
   state.cols = Math.ceil(state.width / state.pixelSize);
   state.rows = Math.ceil(state.height / state.pixelSize);
   
+  // Set bitmap dimensions to match display size × pixel ratio
   state.canvas.width = state.width * dpr;
   state.canvas.height = state.height * dpr;
-  state.canvas.style.width = `${state.width}px`;
-  state.canvas.style.height = `${state.height}px`;
   state.ctx.scale(dpr, dpr);
   
   // Reset pixel array
