@@ -66,10 +66,6 @@ async function init() {
     canvas.classList.add('shifted-up');
 
     setTimeout(() => {
-      renderer.enableWobble(performance.now() / 1000);
-    }, 1300);
-
-    setTimeout(() => {
       menuLinks.forEach((link, index) => {
         const t = index / (menuLinks.length - 1);
         const easedT = t * t * t;
@@ -257,6 +253,7 @@ async function init() {
 
       if (simulation.getIsComplete()) {
         isGrowing = false;
+        renderer.enableWobble(time / 1000);
         shiftUpAndRevealMenu();
       }
 
