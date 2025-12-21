@@ -245,9 +245,13 @@ async function init() {
   }
 
   // Main loop (only renders when in canvas mode)
+  let frameCount = 0;
   function frame(time: number) {
     if (isCanvasMode) {
-      if (isGrowing && !simulation.getIsComplete()) {
+      frameCount++;
+      
+      // Step every 2 frames for slower animation
+      if (isGrowing && !simulation.getIsComplete() && frameCount % 2 === 0) {
         simulation.step();
       }
 
