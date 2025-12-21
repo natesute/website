@@ -18,7 +18,7 @@ interface PixelState {
 }
 
 const PIXEL_SIZE = 4; // Size of each "pixel" in the effect
-const FILL_SPEED = 0.15; // Percentage of pixels to fill per frame (0-1)
+const FILL_SPEED = 0.075; // Percentage of pixels to fill per frame (0-1)
 
 const states = new WeakMap<HTMLElement, PixelState>();
 
