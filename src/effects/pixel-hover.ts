@@ -44,8 +44,8 @@ document.addEventListener('mousemove', (e) => {
 export function initPixelHover(element: HTMLElement): void {
   if (states.has(element)) return;
 
-  // Wrap existing text/children in a span to keep them above the canvas
-  const wrapper = document.createElement('span');
+  // Wrap existing text/children in a div to keep them above the canvas
+  const wrapper = document.createElement('div');
   wrapper.style.cssText = 'position: relative; z-index: 1;';
   while (element.firstChild) {
     wrapper.appendChild(element.firstChild);
