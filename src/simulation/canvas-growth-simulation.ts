@@ -193,7 +193,8 @@ export class CanvasGrowthSimulation {
 
     this.currentBuffer = 1 - this.currentBuffer;
 
-    if (this.stepCount > 60) {
+    // With 256x256 resolution, growth completes visually around 30 steps
+    if (this.stepCount > 30) {
       this.isComplete = true;
     }
   }
