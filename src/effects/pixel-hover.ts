@@ -1,7 +1,6 @@
 /**
  * Pixelation hover effect.
  * On hover: white pixels randomly appear until box is fully white.
- * After full: crackling effect with black pixels popping in/out.
  */
 
 interface PixelState {
@@ -16,16 +15,10 @@ interface PixelState {
   isHovering: boolean;
   isFilled: boolean;
   fillAnimationId: number | null;
-  crackleAnimationId: number | null;
-  cracklePixels: Map<number, number>; // index -> expiry timestamp
 }
 
 const PIXEL_SIZE = 4; // Size of each "pixel" in the effect
 const FILL_SPEED = 0.15; // Percentage of pixels to fill per frame (0-1)
-const CRACKLE_RATE = 0.12; // Probability of spawning a crackle pixel per frame per eligible cell
-const CRACKLE_MAX_ACTIVE = 0.24; // Maximum percentage of pixels that can be crackling at once
-const CRACKLE_DURATION_MIN = 50; // Min ms each crackle pixel stays visible
-const CRACKLE_DURATION_MAX = 250; // Max ms each crackle pixel stays visible
 
 const states = new WeakMap<HTMLElement, PixelState>();
 
@@ -79,8 +72,6 @@ export function initPixelHover(element: HTMLElement): void {
     isHovering: false,
     isFilled: false,
     fillAnimationId: null,
-    crackleAnimationId: null,
-    cracklePixels: new Map(),
   };
 
   states.set(element, state);
@@ -140,13 +131,10 @@ function updateCanvasSize(element: HTMLElement, state: PixelState): void {
   // Reset pixel array
   state.pixels = new Array(state.cols * state.rows).fill(false);
   state.isFilled = false;
-  state.cracklePixels.clear();
   
   // If hovering, restart fill animation (handles resize during hover)
   if (state.isHovering) {
     if (state.fillAnimationId) cancelAnimationFrame(state.fillAnimationId);
-    if (state.crackleAnimationId) cancelAnimationFrame(state.crackleAnimationId);
-    state.crackleAnimationId = null;
     animateFill(element, state);
   }
 }
@@ -154,9 +142,8 @@ function updateCanvasSize(element: HTMLElement, state: PixelState): void {
 function handleMouseEnter(element: HTMLElement, state: PixelState): void {
   state.isHovering = true;
   
-  // Cancel any existing animations
+  // Cancel any existing animation
   if (state.fillAnimationId) cancelAnimationFrame(state.fillAnimationId);
-  if (state.crackleAnimationId) cancelAnimationFrame(state.crackleAnimationId);
   
   // Start fill animation
   animateFill(element, state);
@@ -165,21 +152,16 @@ function handleMouseEnter(element: HTMLElement, state: PixelState): void {
 function handleMouseLeave(_element: HTMLElement, state: PixelState): void {
   state.isHovering = false;
   
-  // Cancel animations
+  // Cancel animation
   if (state.fillAnimationId) {
     cancelAnimationFrame(state.fillAnimationId);
     state.fillAnimationId = null;
-  }
-  if (state.crackleAnimationId) {
-    cancelAnimationFrame(state.crackleAnimationId);
-    state.crackleAnimationId = null;
   }
   
   // Clear canvas and reset state
   state.ctx.clearRect(0, 0, state.width, state.height);
   state.pixels.fill(false);
   state.isFilled = false;
-  state.cracklePixels.clear();
 }
 
 function animateFill(element: HTMLElement, state: PixelState): void {
@@ -194,9 +176,8 @@ function animateFill(element: HTMLElement, state: PixelState): void {
   }
   
   if (unfilledIndices.length === 0) {
-    // Fully filled - start crackling
+    // Fully filled - stay filled (no crackle effect)
     state.isFilled = true;
-    animateCrackle(element, state);
     return;
   }
   
@@ -213,58 +194,8 @@ function animateFill(element: HTMLElement, state: PixelState): void {
   state.fillAnimationId = requestAnimationFrame(() => animateFill(element, state));
 }
 
-function animateCrackle(element: HTMLElement, state: PixelState): void {
-  if (!state.isHovering || !state.isFilled) return;
-  
-  const now = performance.now();
-  const totalPixels = state.pixels.length;
-  const maxActive = Math.ceil(totalPixels * CRACKLE_MAX_ACTIVE);
-  
-  // Remove expired crackle pixels
-  let needsRender = false;
-  for (const [idx, expiry] of state.cracklePixels) {
-    if (now >= expiry) {
-      state.cracklePixels.delete(idx);
-      needsRender = true;
-    }
-  }
-  
-  // Probabilistically add new crackle pixels (if under max)
-  if (state.cracklePixels.size < maxActive) {
-    // Use per-frame probability for organic timing
-    const spawnChance = CRACKLE_RATE * (1 - state.cracklePixels.size / maxActive);
-    
-    // Pick a few random candidates and check if they should spawn
-    const candidateCount = Math.ceil(totalPixels * 0.01); // Check 1% of pixels per frame
-    for (let i = 0; i < candidateCount; i++) {
-      if (Math.random() < spawnChance && state.cracklePixels.size < maxActive) {
-        const idx = getRandomIndex(totalPixels);
-        if (!state.cracklePixels.has(idx)) {
-          const duration = CRACKLE_DURATION_MIN + Math.random() * (CRACKLE_DURATION_MAX - CRACKLE_DURATION_MIN);
-          state.cracklePixels.set(idx, now + duration);
-          needsRender = true;
-        }
-      }
-    }
-  }
-  
-  if (needsRender) {
-    render(state);
-  }
-  
-  // Continue crackling animation loop
-  state.crackleAnimationId = requestAnimationFrame(() => animateCrackle(element, state));
-}
-
-/**
- * Returns a random index for crackle pixels.
- */
-function getRandomIndex(total: number): number {
-  return Math.floor(Math.random() * total);
-}
-
 function render(state: PixelState): void {
-  const { ctx, pixels, cols, pixelSize, cracklePixels, width, height, isFilled } = state;
+  const { ctx, pixels, cols, pixelSize, width, height, isFilled } = state;
   
   ctx.clearRect(0, 0, width, height);
   
@@ -282,16 +213,6 @@ function render(state: PixelState): void {
         const y = Math.floor(i / cols) * pixelSize;
         ctx.fillRect(x, y, pixelSize + overlap, pixelSize + overlap);
       }
-    }
-  }
-  
-  // Draw black crackle pixels on top
-  if (cracklePixels.size > 0) {
-    ctx.fillStyle = '#101216';
-    for (const idx of cracklePixels.keys()) {
-      const x = (idx % cols) * pixelSize;
-      const y = Math.floor(idx / cols) * pixelSize;
-      ctx.fillRect(x, y, pixelSize, pixelSize);
     }
   }
 }
