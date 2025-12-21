@@ -5,6 +5,7 @@ import { CanvasRenderer } from './canvas-renderer';
 import { GlyphRasterizer } from './typography/rasterizer';
 import { PAGES } from './content/pages';
 import { loadFonts } from './typography/fonts';
+import { initAllPixelHovers, recheckAllHoverStates } from './effects/pixel-hover';
 
 /**
  * Common interface for both WebGPU and Canvas 2D rendering paths.
@@ -167,6 +168,9 @@ async function init() {
   // Menu links for staggered reveal
   const menuLinks = document.querySelectorAll('#home-menu a');
 
+  // Initialize pixel hover effect on interactive elements
+  initAllPixelHovers();
+
   function hideMenuLinks() {
     menuRevealed = false;
     menuLinks.forEach(link => link.classList.remove('visible'));
@@ -238,6 +242,12 @@ async function init() {
         parentEl.classList.add('active');
       }
     }
+    
+    // Re-check hover states after page becomes visible
+    // Double rAF ensures layout is computed and hover states are recalculated
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => recheckAllHoverStates());
+    });
   }
 
   // Load home page - animate on first visit, instant on return

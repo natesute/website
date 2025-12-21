@@ -79,7 +79,9 @@
       color: #e8e4de;
       text-decoration: none;
       opacity: 0;
-      display: block;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       width: 8rem;
       text-align: center;
       padding: 0.35rem 0.75rem;
@@ -91,44 +93,10 @@
       overflow: hidden;
     }
 
-    /* Odd stripes - sweep in from left */
-    #home-menu a::before,
-    #home-menu a::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      width: 0;
-      pointer-events: none;
-      transition: width 0.18s ease-out;
-      z-index: -1;
-    }
-
-    #home-menu a::before {
-      left: 0;
-      /* Odd stripes only: at 0, 8, 16, 24px... */
-      background: repeating-linear-gradient(
-        to bottom,
-        #e8e4de 0px 2px,
-        transparent 2px 8px
-      );
-    }
-
-    /* Even stripes - sweep in from right */
-    #home-menu a::after {
-      right: 0;
-      /* Even stripes only: at 4, 12, 20, 28px... */
-      background: repeating-linear-gradient(
-        to bottom,
-        transparent 0px 4px,
-        #e8e4de 4px 6px,
-        transparent 6px 8px
-      );
-    }
-
-    #home-menu a:hover::before,
-    #home-menu a:hover::after {
-      width: 100%;
+    /* Text needs to be above the pixel canvas */
+    #home-menu a span {
+      position: relative;
+      z-index: 1;
     }
 
     #home-menu a:hover {
@@ -284,46 +252,6 @@
       overflow: hidden;
     }
 
-    /* Odd stripes - sweep in from left */
-    .page-content a.list-item::before,
-    .page-content a.list-item::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      width: 0;
-      pointer-events: none;
-      transition: width 0.18s ease-out;
-      z-index: 0;
-    }
-
-    .page-content a.list-item::before {
-      left: 0;
-      /* Odd stripes only: at 0, 8, 16, 24px... */
-      background: repeating-linear-gradient(
-        to bottom,
-        #e8e4de 0px 2px,
-        transparent 2px 8px
-      );
-    }
-
-    /* Even stripes - sweep in from right */
-    .page-content a.list-item::after {
-      right: 0;
-      /* Even stripes only: at 4, 12, 20, 28px... */
-      background: repeating-linear-gradient(
-        to bottom,
-        transparent 0px 4px,
-        #e8e4de 4px 6px,
-        transparent 6px 8px
-      );
-    }
-
-    .page-content a.list-item:hover::before,
-    .page-content a.list-item:hover::after {
-      width: 100%;
-    }
-
     .page-content a.list-item:hover {
       border-color: #e8e4de;
     }
@@ -344,7 +272,7 @@
       color: #e8e4de;
       margin-bottom: 0.25rem;
       position: relative;
-      z-index: 1;
+      z-index: 1; /* Above pixel canvas */
     }
 
     .page-content .item-meta {
@@ -352,7 +280,7 @@
       font-size: 0.9rem;
       color: #888;
       position: relative;
-      z-index: 1;
+      z-index: 1; /* Above pixel canvas */
     }
 
     .page-content .contact-item {
