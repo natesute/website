@@ -1,163 +1,43 @@
-import { GrowthSimulation } from './simulation/growth-simulation';
+// Note: WebGPU implementation preserved in .bak files if needed in future
 import { CanvasGrowthSimulation } from './simulation/canvas-growth-simulation';
-import { Renderer } from './renderer';
 import { CanvasRenderer } from './canvas-renderer';
 import { GlyphRasterizer } from './typography/rasterizer';
 import { PAGES } from './content/pages';
 import { loadFonts } from './typography/fonts';
 import { initAllPixelHovers, recheckAllHoverStates } from './effects/pixel-hover';
 
-/**
- * Common interface for both WebGPU and Canvas 2D rendering paths.
- * Enables shared navigation and animation logic.
- */
-interface RenderContext {
-  simulation: {
-    setMaskFromImage: (data: Uint8ClampedArray, width: number, height: number) => void;
-    setComplete: () => void;
-    getIsComplete: () => boolean;
-    step: () => void;
-    getDimensions: () => { width: number; height: number };
-  };
-  renderer: {
-    enableWobble: (time: number) => void;
-    disableWobble: () => void;
-    clearUnderline: () => void;
-  };
-  render: (time: number, isGrowing: boolean) => void;
-  resize: () => void;
-}
-
-/**
- * Initialize WebGPU rendering path.
- * Returns null if WebGPU is not available.
- */
-async function initWebGPU(canvas: HTMLCanvasElement): Promise<RenderContext | null> {
-  if (!navigator.gpu) {
-    console.log('WebGPU not available, falling back to Canvas 2D');
-    return null;
-  }
-
-  const adapter = await navigator.gpu.requestAdapter();
-  if (!adapter) {
-    console.log('No GPU adapter found, falling back to Canvas 2D');
-    return null;
-  }
-
-  let device: GPUDevice;
-  try {
-    device = await adapter.requestDevice();
-  } catch {
-    console.log('Failed to create GPU device, falling back to Canvas 2D');
-    return null;
-  }
-
-  const context = canvas.getContext('webgpu');
-  if (!context) {
-    console.log('Could not get WebGPU context, falling back to Canvas 2D');
-    return null;
-  }
-
-  const format = navigator.gpu.getPreferredCanvasFormat();
-
-  function resize() {
-    const dpr = Math.min(window.devicePixelRatio, 2);
-    canvas.width = window.innerWidth * dpr;
-    canvas.height = (window.innerHeight + window.innerHeight * 0.15) * dpr;
-    context!.configure({
-      device,
-      format,
-      alphaMode: 'opaque',
-    });
-  }
-
-  resize();
-
-  const simWidth = 512;
-  const simHeight = 512;
-  const simulation = new GrowthSimulation(device, simWidth, simHeight);
-  const renderer = new Renderer(device, format, simulation);
-
-  return {
-    simulation,
-    renderer,
-    resize,
-    render: (time: number, isGrowing: boolean) => {
-      renderer.updateBindGroup();
-      const commandEncoder = device.createCommandEncoder();
-      renderer.render(
-        commandEncoder,
-        context!.getCurrentTexture().createView(),
-        time / 1000,
-        isGrowing,
-        canvas.width,
-        canvas.height
-      );
-      device.queue.submit([commandEncoder.finish()]);
-    },
-  };
-}
-
-/**
- * Initialize Canvas 2D fallback rendering path.
- */
-function initCanvas2D(canvas: HTMLCanvasElement): RenderContext {
-  const ctx = canvas.getContext('2d')!;
-
-  function resize() {
-    const dpr = Math.min(window.devicePixelRatio, 2);
-    canvas.width = window.innerWidth * dpr;
-    canvas.height = (window.innerHeight + window.innerHeight * 0.15) * dpr;
-  }
-
-  resize();
-
-  const simWidth = 512;
-  const simHeight = 512;
-  const simulation = new CanvasGrowthSimulation(simWidth, simHeight);
-  const renderer = new CanvasRenderer(ctx, simulation);
-
-  return {
-    simulation,
-    renderer,
-    resize,
-    render: (time: number, isGrowing: boolean) => {
-      renderer.render(time / 1000, isGrowing, canvas.width, canvas.height);
-    },
-  };
-}
-
 async function init() {
   const canvas = document.getElementById('canvas') as HTMLCanvasElement;
   const fallback = document.getElementById('fallback') as HTMLDivElement;
   const body = document.body;
 
-  // Check for force-canvas query param (for testing fallback)
-  const forceCanvas = new URLSearchParams(window.location.search).has('canvas');
-
-  // Try WebGPU first, fall back to Canvas 2D
-  let renderContext = forceCanvas ? null : await initWebGPU(canvas);
-  let isCanvasRenderer = false;
-
-  if (!renderContext) {
-    // Use Canvas 2D fallback
-    renderContext = initCanvas2D(canvas);
-    isCanvasRenderer = true;
-    console.log('Using Canvas 2D fallback renderer');
-  } else {
-    console.log('Using WebGPU renderer');
+  // Initialize Canvas 2D renderer
+  const ctx = canvas.getContext('2d')!;
+  
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio, 2);
+    canvas.width = window.innerWidth * dpr;
+    canvas.height = (window.innerHeight + window.innerHeight * 0.15) * dpr;
   }
+  
+  resize();
+  
+  const simWidth = 512;
+  const simHeight = 512;
+  const simulation = new CanvasGrowthSimulation(simWidth, simHeight);
+  const renderer = new CanvasRenderer(ctx, simulation);
+  
+  const render = (time: number, isGrowing: boolean) => {
+    renderer.render(time / 1000, isGrowing, canvas.width, canvas.height);
+  };
 
-  // Hide the "not supported" fallback since we have Canvas 2D now
+  // Hide the fallback message
   fallback.style.display = 'none';
-
-  const { simulation, renderer, resize, render } = renderContext;
 
   window.addEventListener('resize', resize);
 
   await loadFonts();
 
-  const { width: simWidth, height: simHeight } = simulation.getDimensions();
   const rasterizer = new GlyphRasterizer(simWidth, simHeight);
 
   // Current navigation path (e.g., "home", "projects", "projects/lorem-ipsum")
@@ -365,15 +245,9 @@ async function init() {
   }
 
   // Main loop (only renders when in canvas mode)
-  let frameCount = 0;
-  // Canvas 2D steps every frame; WebGPU steps every 2 frames (GPU is faster)
-  const stepInterval = isCanvasRenderer ? 1 : 2;
-  
   function frame(time: number) {
     if (isCanvasMode) {
-      frameCount++;
-
-      if (isGrowing && !simulation.getIsComplete() && frameCount % stepInterval === 0) {
+      if (isGrowing && !simulation.getIsComplete()) {
         simulation.step();
       }
 
