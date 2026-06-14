@@ -4,8 +4,9 @@
   "type": "module",
   "scripts": {
     "dev": "npm run build:content && vite",
-    "build": "npm run build:content && tsc && vite build",
+    "build": "npm run build:content && tsc && vite build && npm run prerender",
     "build:content": "tsx scripts/build-content.ts",
+    "prerender": "tsx scripts/prerender-routes.ts",
     "preview": "vite preview"
   },
   "dependencies": {
