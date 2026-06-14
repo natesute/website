@@ -11,8 +11,7 @@ export interface FontConfig {
 
 export const FONTS: FontConfig[] = [
   { family: 'Cormorant Garamond', weights: [400, 600], italic: true },
-  { family: 'JetBrains Mono', weights: [400] },
-  { family: 'Press Start 2P', weights: [400] },
+  { family: 'Bytesized', weights: [400] },
   { family: 'Geo', weights: [400], italic: true },
 ];
 

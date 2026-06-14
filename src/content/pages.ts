@@ -1,30 +1,26 @@
 /**
- * Page content definitions.
- * Each page defines its text content and layout for the glyph rasterizer.
+ * Home page text blocks for the glyph rasterizer.
+ * (Other pages render as plain HTML and don't need rasterization.)
  */
-
-export type PageState = 'home' | 'projects' | 'about me' | 'writings' | 'contacts';
 
 export interface TextBlock {
   text: string;
-  x: number;      // Normalized 0-1
-  y: number;      // Normalized 0-1
-  fontSize: number; // In pixels (at 1024px canvas)
+  x: number;
+  y: number;
+  fontSize: number;
   align: 'left' | 'center' | 'right';
-  maxWidth?: number; // Normalized, for wrapping
+  maxWidth?: number;
   weight?: 'normal' | 'bold';
   italic?: boolean;
-  fontFamily?: string; // Custom font family (defaults to Cormorant Garamond)
-  letterSpacing?: number; // Letter spacing in pixels (scaled with fontSize)
-  isLink?: boolean;
-  linkTarget?: PageState;
+  fontFamily?: string;
+  letterSpacing?: number;
 }
 
 export interface PageContent {
   blocks: TextBlock[];
 }
 
-export const PAGES: Record<PageState, PageContent> = {
+export const PAGES: Record<'home', PageContent> = {
   home: {
     blocks: [
       {
@@ -47,218 +43,4 @@ export const PAGES: Record<PageState, PageContent> = {
       },
     ],
   },
-
-  projects: {
-    blocks: [
-      {
-        text: 'projects',
-        x: 0.5,
-        y: 0.28,
-        fontSize: 22,
-        align: 'center',
-        italic: true,
-      },
-      {
-        text: 'Lorem Ipsum',
-        x: 0.5,
-        y: 0.42,
-        fontSize: 28,
-        align: 'center',
-        weight: 'bold',
-      },
-      {
-        text: 'Dolor sit amet consectetur',
-        x: 0.5,
-        y: 0.48,
-        fontSize: 20,
-        align: 'center',
-      },
-      {
-        text: 'Adipiscing Elit',
-        x: 0.5,
-        y: 0.58,
-        fontSize: 28,
-        align: 'center',
-        weight: 'bold',
-      },
-      {
-        text: 'Sed do eiusmod tempor incididunt',
-        x: 0.5,
-        y: 0.64,
-        fontSize: 20,
-        align: 'center',
-      },
-      {
-        text: 'back',
-        x: 0.5,
-        y: 0.85,
-        fontSize: 24,
-        align: 'center',
-        isLink: true,
-        linkTarget: 'home',
-      },
-    ],
-  },
-
-  'about me': {
-    blocks: [
-      {
-        text: 'about me',
-        x: 0.5,
-        y: 0.18,
-        fontSize: 22,
-        align: 'center',
-        italic: true,
-      },
-      {
-        text: 'Lorem ipsum dolor sit amet,',
-        x: 0.5,
-        y: 0.35,
-        fontSize: 24,
-        align: 'center',
-      },
-      {
-        text: 'consectetur adipiscing elit.',
-        x: 0.5,
-        y: 0.41,
-        fontSize: 24,
-        align: 'center',
-      },
-      {
-        text: 'Ut enim ad minim veniam,',
-        x: 0.5,
-        y: 0.52,
-        fontSize: 22,
-        align: 'center',
-      },
-      {
-        text: 'quis nostrud exercitation',
-        x: 0.5,
-        y: 0.58,
-        fontSize: 22,
-        align: 'center',
-      },
-      {
-        text: 'ullamco laboris.',
-        x: 0.5,
-        y: 0.64,
-        fontSize: 22,
-        align: 'center',
-      },
-      {
-        text: 'back',
-        x: 0.5,
-        y: 0.85,
-        fontSize: 24,
-        align: 'center',
-        isLink: true,
-        linkTarget: 'home',
-      },
-    ],
-  },
-
-  writings: {
-    blocks: [
-      {
-        text: 'writings',
-        x: 0.5,
-        y: 0.18,
-        fontSize: 22,
-        align: 'center',
-        italic: true,
-      },
-      {
-        text: 'Duis aute irure dolor in',
-        x: 0.5,
-        y: 0.28,
-        fontSize: 22,
-        align: 'center',
-        italic: true,
-      },
-      {
-        text: 'reprehenderit in voluptate.',
-        x: 0.5,
-        y: 0.34,
-        fontSize: 22,
-        align: 'center',
-        italic: true,
-      },
-      {
-        text: 'Excepteur Sint Occaecat',
-        x: 0.5,
-        y: 0.48,
-        fontSize: 26,
-        align: 'center',
-        weight: 'bold',
-      },
-      {
-        text: '20XX.XX.XX',
-        x: 0.5,
-        y: 0.54,
-        fontSize: 18,
-        align: 'center',
-      },
-      {
-        text: 'Cupidatat Non Proident',
-        x: 0.5,
-        y: 0.64,
-        fontSize: 26,
-        align: 'center',
-        weight: 'bold',
-      },
-      {
-        text: '20XX.XX.XX',
-        x: 0.5,
-        y: 0.70,
-        fontSize: 18,
-        align: 'center',
-      },
-      {
-        text: 'back',
-        x: 0.5,
-        y: 0.85,
-        fontSize: 24,
-        align: 'center',
-        isLink: true,
-        linkTarget: 'home',
-      },
-    ],
-  },
-
-  contacts: {
-    blocks: [
-      {
-        text: 'contacts',
-        x: 0.5,
-        y: 0.25,
-        fontSize: 22,
-        align: 'center',
-        italic: true,
-      },
-      {
-        text: 'admin@nathansuttie.com',
-        x: 0.5,
-        y: 0.45,
-        fontSize: 24,
-        align: 'center',
-      },
-      {
-        text: 'github.com/mygithubusername',
-        x: 0.5,
-        y: 0.55,
-        fontSize: 24,
-        align: 'center',
-      },
-      {
-        text: 'back',
-        x: 0.5,
-        y: 0.85,
-        fontSize: 24,
-        align: 'center',
-        isLink: true,
-        linkTarget: 'home',
-      },
-    ],
-  },
 };
-

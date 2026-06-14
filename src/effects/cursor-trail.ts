@@ -130,27 +130,23 @@ export function initCursorTrail(): void {
       }
     }
     
-    // Update and draw particles
+    // Update + draw + compact in one pass (write index lags read index, dead particles get overwritten)
     ctx.fillStyle = '#e8e4de';
-    
-    for (let i = particles.length - 1; i >= 0; i--) {
+    let write = 0;
+    for (let i = 0; i < particles.length; i++) {
       const p = particles[i];
       p.life += deltaTime;
-      
-      if (p.life >= p.maxLife) {
-        // Remove dead particle
-        particles.splice(i, 1);
-        continue;
-      }
-      
-      // Calculate opacity - stay full for most of life, then fade at the end
+      if (p.life >= p.maxLife) continue;
+
       const lifeRatio = 1 - (p.life / p.maxLife);
-      const opacity = Math.min(1, lifeRatio * 2); // Full opacity until 50% life, then fade
-      
+      const opacity = Math.min(1, lifeRatio * 2);
       ctx.globalAlpha = opacity;
       ctx.fillRect(p.x, p.y, p.size, p.size);
+
+      particles[write++] = p;
     }
-    
+    particles.length = write;
+
     ctx.globalAlpha = 1;
     
     animationId = requestAnimationFrame(animate);

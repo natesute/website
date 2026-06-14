@@ -1,4 +1,3 @@
-// Note: WebGPU implementation preserved in .bak files if needed in future
 import { CanvasGrowthSimulation } from './simulation/canvas-growth-simulation';
 import { CanvasRenderer } from './canvas-renderer';
 import { GlyphRasterizer } from './typography/rasterizer';
@@ -15,22 +14,19 @@ async function init() {
   // Initialize Canvas 2D renderer
   const ctx = canvas.getContext('2d')!;
   
-  function resize() {
-    const dpr = Math.min(window.devicePixelRatio, 2);
-    canvas.width = window.innerWidth * dpr;
-    canvas.height = (window.innerHeight + window.innerHeight * 0.15) * dpr;
-  }
-  
-  resize();
-  
   const simWidth = 256;
   const simHeight = 256;
   const simulation = new CanvasGrowthSimulation(simWidth, simHeight);
   const renderer = new CanvasRenderer(ctx, simulation);
-  
-  const render = (time: number, isGrowing: boolean) => {
-    renderer.render(time / 1000, isGrowing, canvas.width, canvas.height);
-  };
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio, 2);
+    canvas.width = window.innerWidth * dpr;
+    canvas.height = (window.innerHeight + window.innerHeight * 0.15) * dpr;
+    renderer.markDirty();
+  }
+
+  resize();
 
   // Hide the fallback message
   fallback.style.display = 'none';
@@ -136,13 +132,13 @@ async function init() {
   async function loadHomePage() {
     currentPath = 'home';
     showCanvasMode();
-    renderer.clearUnderline();
 
     await document.fonts.ready;
 
     const page = PAGES['home'];
     const mask = rasterizer.rasterizePage(page);
     simulation.setMaskFromImage(mask.data, mask.width, mask.height);
+    renderer.markDirty();
 
     if (hasVisitedHome) {
       simulation.setComplete();
@@ -251,10 +247,10 @@ async function init() {
   
   function frame(time: number) {
     if (isCanvasMode) {
-      // Time-based stepping for consistent animation speed
       if (isGrowing && !simulation.getIsComplete()) {
         if (time - lastStepTime >= STEP_INTERVAL) {
           simulation.step();
+          renderer.markDirty();
           lastStepTime = time;
         }
       }
@@ -262,12 +258,10 @@ async function init() {
       if (simulation.getIsComplete() && isGrowing) {
         isGrowing = false;
         renderer.enableWobble(time / 1000);
-        // Delay shift so wobble is visible first
         setTimeout(() => shiftUpAndRevealMenu(), 800);
       }
 
-      const stillGrowing = isGrowing && !simulation.getIsComplete();
-      render(time, stillGrowing);
+      renderer.render(time / 1000, canvas.width, canvas.height);
     }
 
     requestAnimationFrame(frame);
