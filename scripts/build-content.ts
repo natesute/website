@@ -37,7 +37,7 @@ interface PageMeta {
   description: string;
   slug?: string;
   order?: number;
-  date?: string;
+  date?: string | Date;
   draft?: boolean;
 }
 
@@ -102,6 +102,18 @@ function generateSlug(filePath: string, meta: PageMeta): string {
 }
 
 /**
+ * Format a frontmatter date as an ISO date string (YYYY-MM-DD).
+ * gray-matter parses unquoted YAML dates as Date objects at UTC midnight,
+ * so read UTC components — interpolating the Date directly would embed the
+ * build machine's timezone.
+ */
+function toIsoDate(date: string | Date | undefined): string {
+  if (!date) return '';
+  if (typeof date === 'string') return date;
+  return date.toISOString().slice(0, 10);
+}
+
+/**
  * Generate the llms.txt index file
  */
 function generateLlmsTxt(site: SiteConfig, items: ContentItem[]): string {
@@ -150,7 +162,7 @@ function generateLlmsTxt(site: SiteConfig, items: ContentItem[]): string {
         return dateB - dateA;
       });
     for (const post of sortedWritings) {
-      const dateStr = post.meta.date || 'Unknown date';
+      const dateStr = toIsoDate(post.meta.date) || 'Unknown date';
       lines.push(`- [${post.meta.title}](/writings/${post.slug}) (${dateStr}): ${post.meta.description}`);
     }
     lines.push('');
@@ -239,7 +251,7 @@ function generateLlmsFullTxt(site: SiteConfig, items: ContentItem[]): string {
     for (const post of sortedWritings) {
       lines.push(`### ${post.meta.title}`);
       lines.push('');
-      lines.push(`*${post.meta.date || 'Unknown date'}*`);
+      lines.push(`*${toIsoDate(post.meta.date) || 'Unknown date'}*`);
       lines.push('');
       if (post.content) {
         lines.push(post.content);
@@ -328,10 +340,17 @@ function generateProjectPageHtml(project: ContentItem): string {
 /**
  * Generate individual writing page HTML
  */
-function formatDate(dateStr: string | undefined): string {
+function formatDate(dateStr: string | Date | undefined): string {
   if (!dateStr) return '';
   const date = new Date(dateStr);
-  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  // timeZone: 'UTC' keeps the rendered day independent of the build machine —
+  // frontmatter dates are UTC midnight, so local formatting can shift the day.
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    timeZone: 'UTC',
+  });
 }
 
 function generateWritingPageHtml(writing: ContentItem): string {

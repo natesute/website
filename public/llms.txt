@@ -14,8 +14,8 @@
 
 ## Writings
 
-- [Cupidatat Non Proident](/writings/cupidatat) (Tue Feb 20 2024 11:00:00 GMT+1100 (Australian Eastern Daylight Time)): Another post
-- [Excepteur Sint Occaecat](/writings/excepteur-sint) (Mon Jan 15 2024 11:00:00 GMT+1100 (Australian Eastern Daylight Time)): A brief introduction
+- [Cupidatat Non Proident](/writings/cupidatat) (2024-02-20): Another post
+- [Excepteur Sint Occaecat](/writings/excepteur-sint) (2024-01-15): A brief introduction
 
 ## Contact
 

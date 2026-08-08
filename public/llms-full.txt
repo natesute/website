@@ -42,13 +42,13 @@ Duis aute irure dolor in reprehenderit in voluptate.
 
 ### Cupidatat Non Proident
 
-*Tue Feb 20 2024 11:00:00 GMT+1100 (Australian Eastern Daylight Time)*
+*2024-02-20*
 
 Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
 
 ### Excepteur Sint Occaecat
 
-*Mon Jan 15 2024 11:00:00 GMT+1100 (Australian Eastern Daylight Time)*
+*2024-01-15*
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
 
