@@ -56,5 +56,5 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor i
 
 ## Contact
 
-- Email: admin@email.com
-- GitHub: github.com/mygithubusername
+- Email: hi@nathansuttie.com
+- GitHub: github.com/natesute
