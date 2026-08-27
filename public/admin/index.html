@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <title>admin — nathansuttie.com</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geo:ital@0;1&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/marked@15.0.12/marked.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { font-size: 18px; }
+    body {
+      min-height: 100vh;
+      background: #0A0E14;
+      color: #e8e4de;
+      font-family: 'Geo', sans-serif;
+      line-height: 1.6;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 3rem 1.5rem 6rem; }
+    h1 {
+      font-size: 1.8rem; font-weight: 400;
+      text-shadow: 1px 1px 0 #8CA6B8; margin-bottom: 1rem;
+    }
+    h2 { font-size: 1.2rem; font-weight: 400; text-shadow: 1px 1px 0 #8CA6B8; margin: 2rem 0 1rem; }
+    a { color: #e8e4de; text-decoration: none; border-bottom: 1px solid #555; }
+    a:hover { border-bottom-color: #e8e4de; }
+    p { color: #a8a4a0; margin-bottom: 1rem; }
+    label { display: block; font-size: 0.9rem; color: #888; margin: 1rem 0 0.25rem; }
+    input, select, textarea {
+      width: 100%; padding: 0.5rem 0.75rem;
+      background: transparent; border: 2px solid #444;
+      color: #e8e4de; font-family: 'Geo', sans-serif; font-size: 1rem;
+    }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: #8CA6B8; }
+    select option { background: #0A0E14; }
+    textarea { min-height: 16rem; line-height: 1.6; resize: vertical; }
+    button {
+      font-family: 'Geo', sans-serif; font-size: 1rem;
+      padding: 0.35rem 1rem; margin-top: 1rem; margin-right: 0.5rem;
+      background: transparent; border: 2px solid #444; color: #e8e4de; cursor: pointer;
+    }
+    button:hover {
+      background: repeating-linear-gradient(to bottom, #e8e4de 0px 2px, transparent 2px 4px);
+      background-size: 100% 4px;
+      color: #101216; text-shadow: 1px 1px 0 #ffffff; border-color: #e8e4de;
+    }
+    button.small { font-size: 0.85rem; padding: 0.15rem 0.6rem; margin-top: 0; }
+    .file-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.4rem 0.75rem; border: 2px solid #333; margin-bottom: 0.5rem;
+      cursor: pointer; color: #a8a4a0;
+    }
+    .file-item:hover { border-color: #e8e4de; color: #e8e4de; }
+    .status { font-size: 0.9rem; margin-top: 1rem; color: #8CA6B8; min-height: 1.5rem; }
+    .status.err { color: #c47d7d; }
+    .preview {
+      border: 2px solid #333; padding: 1rem; margin-top: 1rem;
+      font-family: 'Geo', sans-serif;
+    }
+    .preview img { max-width: 100%; }
+    .preview p, .preview li { color: #a8a4a0; }
+    .preview h1, .preview h2, .preview h3 { margin: 1rem 0 0.5rem; font-weight: 400; }
+    .row { display: flex; gap: 1rem; }
+    .row > div { flex: 1; }
+    .muted { color: #666; font-size: 0.85rem; }
+    .topbar { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid #333; }
+    .hidden { display: none; }
+    @media (max-width: 600px) { html { font-size: 16px; } .row { flex-direction: column; gap: 0; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <h1>admin</h1>
+      <span><a href="/" style="margin-right:1rem">← site</a><button class="small hidden" id="signout">sign out</button></span>
+    </div>
+
+    <!-- Sign in -->
+    <section id="view-auth" class="hidden">
+      <p>Paste a GitHub fine-grained personal access token to publish. It stays in this browser only.</p>
+      <p class="muted">Create one at github.com → Settings → Developer settings → Fine-grained tokens. Repository access: only <b>natesute/website</b>. Permissions: Contents — read and write.</p>
+      <label for="token">token</label>
+      <input id="token" type="password" autocomplete="off" placeholder="github_pat_...">
+      <button id="signin">sign in</button>
+      <div class="status" id="auth-status"></div>
+    </section>
+
+    <!-- Home: new entry + file browser -->
+    <section id="view-home" class="hidden">
+      <h2>new journal entry</h2>
+      <div class="row">
+        <div>
+          <label for="entry-project">project</label>
+          <select id="entry-project"></select>
+        </div>
+        <div>
+          <label for="entry-date">date</label>
+          <input id="entry-date" type="date">
+        </div>
+      </div>
+      <label for="entry-title">title</label>
+      <input id="entry-title" type="text" placeholder="what happened">
+      <label for="entry-body">entry (markdown)</label>
+      <textarea id="entry-body" placeholder="What did you do, and why does it matter?"></textarea>
+      <button id="entry-preview-btn">preview</button>
+      <button id="entry-publish">publish</button>
+      <div class="preview hidden" id="entry-preview"></div>
+      <div class="status" id="entry-status"></div>
+
+      <h2>edit a page</h2>
+      <p class="muted">Any content file: project pages, journal entries, about, writings. Raw markdown, frontmatter included.</p>
+      <div id="file-list"><p class="muted">loading…</p></div>
+    </section>
+
+    <!-- File editor -->
+    <section id="view-editor" class="hidden">
+      <h2 id="editor-path"></h2>
+      <textarea id="editor-body" spellcheck="false" style="min-height:24rem"></textarea>
+      <button id="editor-preview-btn">preview</button>
+      <button id="editor-save">save & publish</button>
+      <button id="editor-back">← back</button>
+      <div class="preview hidden" id="editor-preview"></div>
+      <div class="status" id="editor-status"></div>
+    </section>
+  </div>
+
+  <script>
+  (function () {
+    const REPO = 'natesute/website';
+    const BRANCH = 'main';
+    const TOKEN_KEY = 'admin-gh-token';
+
+    const $ = (id) => document.getElementById(id);
+    const views = ['view-auth', 'view-home', 'view-editor'];
+    function show(view) {
+      views.forEach((v) => $(v).classList.toggle('hidden', v !== view));
+      $('signout').classList.toggle('hidden', view === 'view-auth');
+    }
+    function setStatus(id, msg, isErr) {
+      const el = $(id);
+      el.textContent = msg;
+      el.classList.toggle('err', !!isErr);
+    }
+
+    let token = localStorage.getItem(TOKEN_KEY) || '';
+
+    async function gh(path, opts = {}) {
+      const res = await fetch('https://api.github.com' + path, {
+        ...opts,
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Accept': 'application/vnd.github+json',
+          'X-GitHub-Api-Version': '2022-11-28',
+          ...(opts.headers || {}),
+        },
+      });
+      if (!res.ok) {
+        let detail = '';
+        try { detail = (await res.json()).message || ''; } catch (e) {}
+        throw new Error(res.status + ' ' + detail);
+      }
+      return res.status === 204 ? null : res.json();
+    }
+
+    // UTF-8 <-> base64, chunked so large files don't blow the arg limit
+    function b64encode(str) {
+      const bytes = new TextEncoder().encode(str);
+      let bin = '';
+      for (let i = 0; i < bytes.length; i += 0x8000) {
+        bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+      }
+      return btoa(bin);
+    }
+    function b64decode(b64) {
+      const bin = atob(b64.replace(/\n/g, ''));
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      return new TextDecoder().decode(bytes);
+    }
+
+    function slugify(s) {
+      return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    }
+
+    async function getFile(path) {
+      return gh('/repos/' + REPO + '/contents/' + path + '?ref=' + BRANCH);
+    }
+
+    async function putFile(path, content, message, sha) {
+      return gh('/repos/' + REPO + '/contents/' + path, {
+        method: 'PUT',
+        body: JSON.stringify({
+          message: message,
+          content: b64encode(content),
+          branch: BRANCH,
+          ...(sha ? { sha: sha } : {}),
+        }),
+      });
+    }
+
+    // ---- sign in ----
+    async function verifyToken() {
+      await gh('/repos/' + REPO);
+    }
+
+    $('signin').addEventListener('click', async () => {
+      token = $('token').value.trim();
+      if (!token) return setStatus('auth-status', 'paste a token first', true);
+      setStatus('auth-status', 'checking…');
+      try {
+        await verifyToken();
+        localStorage.setItem(TOKEN_KEY, token);
+        setStatus('auth-status', '');
+        enter();
+      } catch (e) {
+        token = '';
+        setStatus('auth-status', 'token rejected: ' + e.message, true);
+      }
+    });
+
+    $('signout').addEventListener('click', () => {
+      localStorage.removeItem(TOKEN_KEY);
+      token = '';
+      show('view-auth');
+    });
+
+    // ---- home ----
+    async function loadHome() {
+      // en-CA formats as YYYY-MM-DD; toISOString would give the UTC day
+      $('entry-date').value = new Date().toLocaleDateString('en-CA');
+
+      // Projects = folders under content/projects
+      const entries = await getFile('content/projects');
+      const projects = entries.filter((e) => e.type === 'dir').map((e) => e.name);
+      $('entry-project').innerHTML = projects
+        .map((p) => '<option value="' + p + '">' + p + '</option>')
+        .join('');
+
+      // All markdown under content/ via the git tree
+      const tree = await gh('/repos/' + REPO + '/git/trees/' + BRANCH + '?recursive=1');
+      const files = tree.tree
+        .filter((t) => t.type === 'blob' && t.path.startsWith('content/') && t.path.endsWith('.md'))
+        .map((t) => t.path)
+        .sort();
+      $('file-list').innerHTML = files
+        .map((f) => '<div class="file-item" data-path="' + f + '">' + f.replace('content/', '') + '</div>')
+        .join('');
+      $('file-list').querySelectorAll('.file-item').forEach((el) => {
+        el.addEventListener('click', () => openEditor(el.dataset.path));
+      });
+    }
+
+    function togglePreview(btnId, boxId, srcId) {
+      $(btnId).addEventListener('click', () => {
+        const box = $(boxId);
+        if (box.classList.contains('hidden')) {
+          // Strip frontmatter before previewing
+          const raw = $(srcId).value.replace(/^---[\s\S]*?---\s*/, '');
+          box.innerHTML = marked.parse(raw);
+          box.classList.remove('hidden');
+        } else {
+          box.classList.add('hidden');
+        }
+      });
+    }
+    togglePreview('entry-preview-btn', 'entry-preview', 'entry-body');
+    togglePreview('editor-preview-btn', 'editor-preview', 'editor-body');
+
+    $('entry-publish').addEventListener('click', async () => {
+      const project = $('entry-project').value;
+      const date = $('entry-date').value;
+      const title = $('entry-title').value.trim();
+      const body = $('entry-body').value.trim();
+      if (!project || !date || !title || !body) {
+        return setStatus('entry-status', 'need a project, date, title and body', true);
+      }
+      const path = 'content/projects/' + project + '/log/' + date + '-' + slugify(title) + '.md';
+      const content = '---\ntitle: ' + title + '\n---\n\n' + body + '\n';
+      setStatus('entry-status', 'publishing…');
+      try {
+        let sha;
+        try { sha = (await getFile(path)).sha; } catch (e) { /* new file */ }
+        await putFile(path, content, 'journal: ' + project + ' — ' + title, sha);
+        $('entry-title').value = '';
+        $('entry-body').value = '';
+        $('entry-preview').classList.add('hidden');
+        setStatus('entry-status', 'published. The site deploys in about a minute.');
+        loadHome();
+      } catch (e) {
+        setStatus('entry-status', 'publish failed: ' + e.message, true);
+      }
+    });
+
+    // ---- editor ----
+    let editing = { path: null, sha: null };
+
+    async function openEditor(path) {
+      setStatus('editor-status', '');
+      $('editor-preview').classList.add('hidden');
+      show('view-editor');
+      $('editor-path').textContent = path.replace('content/', '');
+      $('editor-body').value = 'loading…';
+      try {
+        const file = await getFile(path);
+        editing = { path: path, sha: file.sha };
+        $('editor-body').value = b64decode(file.content);
+      } catch (e) {
+        setStatus('editor-status', 'load failed: ' + e.message, true);
+      }
+    }
+
+    $('editor-save').addEventListener('click', async () => {
+      setStatus('editor-status', 'saving…');
+      try {
+        const res = await putFile(
+          editing.path,
+          $('editor-body').value,
+          'edit: ' + editing.path.replace('content/', ''),
+          editing.sha
+        );
+        editing.sha = res.content.sha;
+        setStatus('editor-status', 'saved. The site deploys in about a minute.');
+      } catch (e) {
+        setStatus('editor-status', 'save failed: ' + e.message, true);
+      }
+    });
+
+    $('editor-back').addEventListener('click', () => show('view-home'));
+
+    // ---- boot ----
+    async function enter() {
+      show('view-home');
+      setStatus('entry-status', '');
+      try {
+        await loadHome();
+      } catch (e) {
+        if (String(e.message).startsWith('401')) {
+          show('view-auth');
+          setStatus('auth-status', 'token expired or revoked — paste a new one', true);
+        } else {
+          setStatus('entry-status', 'load failed: ' + e.message, true);
+        }
+      }
+    }
+
+    if (token) { enter(); } else { show('view-auth'); }
+  })();
+  </script>
+</body>
+</html>

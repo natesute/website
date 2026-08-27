@@ -26,13 +26,39 @@ function listMarkdown(dir: string): string[] {
 }
 
 function collectChildSlugs(dir: string): string[] {
-  return listMarkdown(dir)
+  const flat = listMarkdown(dir)
     .map((file) => {
       const { data } = matter(fs.readFileSync(file, 'utf-8'));
       if (data.draft === true) return null;
       return slugFromFile(file, data);
     })
     .filter((slug): slug is string => slug !== null);
+
+  // Folder-based entries: <dir>/<slug>/index.md
+  const folders = fs.existsSync(dir)
+    ? fs
+        .readdirSync(dir, { withFileTypes: true })
+        .filter((e) => e.isDirectory() && !e.name.startsWith('.'))
+        .map((e) => {
+          const indexFile = path.join(dir, e.name, 'index.md');
+          if (!fs.existsSync(indexFile)) return null;
+          const { data } = matter(fs.readFileSync(indexFile, 'utf-8'));
+          if (data.draft === true) return null;
+          return typeof data.slug === 'string' ? data.slug : e.name;
+        })
+        .filter((slug): slug is string => slug !== null)
+    : [];
+
+  return [...flat, ...folders];
+}
+
+function generateSitemap(routes: string[]): string {
+  const urls = ['', ...routes]
+    .map(
+      (route) => `  <url><loc>https://nathansuttie.com/${route}</loc></url>`
+    )
+    .join('\n');
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;
 }
 
 function emitRoute(route: string, indexHtml: string): void {
@@ -64,7 +90,10 @@ function main(): void {
     emitRoute(route, indexHtml);
   }
 
-  console.log(`Prerendered ${routes.length} routes:`);
+  // The sitemap is generated from the same route list, so it can never drift
+  fs.writeFileSync(path.join(DIST_DIR, 'sitemap.xml'), generateSitemap(routes));
+
+  console.log(`Prerendered ${routes.length} routes (+ sitemap.xml):`);
   for (const route of routes) console.log(`  /${route}`);
 }
 

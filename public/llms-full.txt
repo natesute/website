@@ -22,17 +22,25 @@ Feel free to reach out via email or connect on GitHub.
 
 ## Projects
 
-### Lorem Ipsum
+### pitch-perfect
 
-*Dolor sit amet consectetur*
+** — shipped
 
-Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.
+### rockets
 
-### Adipiscing Elit
+** — ongoing
 
-*Sed do eiusmod tempor incididunt*
+### song-viz
 
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+** — experiment
+
+### strood
+
+** — ongoing
+
+### undo
+
+** — ongoing
 
 ---
 

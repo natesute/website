@@ -9,8 +9,11 @@
 
 ## Projects
 
-- [Lorem Ipsum](/projects/lorem-ipsum): Dolor sit amet consectetur
-- [Adipiscing Elit](/projects/adipiscing-elit): Sed do eiusmod tempor incididunt
+- [pitch-perfect](/projects/pitch-perfect) [shipped]: 
+- [rockets](/projects/rockets) [ongoing]: 
+- [song-viz](/projects/song-viz) [experiment]: 
+- [strood](/projects/strood) [ongoing]: 
+- [undo](/projects/undo) [ongoing]: 
 
 ## Writings
 

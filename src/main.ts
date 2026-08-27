@@ -77,6 +77,25 @@ async function init() {
     }, 600);
   }
 
+  /**
+   * Every page ships in the DOM at once and display:none does not stop the
+   * browser fetching img/iframe src, so the build emits data-src instead.
+   * Media loads when its page is activated; iframes are released again on
+   * navigate-away so a demo's audio/game loop can't keep running unseen.
+   */
+  function hydrateMedia(scope: Element) {
+    scope.querySelectorAll('img[data-src], iframe[data-src]').forEach(el => {
+      const src = el.getAttribute('data-src');
+      if (src && el.getAttribute('src') !== src) el.setAttribute('src', src);
+    });
+  }
+
+  function releaseIframes(scope: Element) {
+    scope.querySelectorAll('iframe[data-src]').forEach(el => {
+      el.removeAttribute('src');
+    });
+  }
+
   // Switch to canvas mode (home page)
   function showCanvasMode() {
     isCanvasMode = true;
@@ -86,6 +105,7 @@ async function init() {
     // Hide all HTML pages
     document.querySelectorAll('.page-content').forEach(el => {
       el.classList.remove('active');
+      releaseIframes(el);
     });
   }
 
@@ -101,6 +121,7 @@ async function init() {
     // Hide all pages first
     document.querySelectorAll('.page-content').forEach(el => {
       el.classList.remove('active');
+      releaseIframes(el);
     });
 
     // Convert path to page ID
@@ -111,6 +132,7 @@ async function init() {
 
     if (pageEl) {
       pageEl.classList.add('active');
+      hydrateMedia(pageEl);
     } else {
       // Fallback: try the parent page for nested routes
       const parentPath = pagePath.split('/')[0];
@@ -118,6 +140,7 @@ async function init() {
       const parentEl = document.getElementById(parentId);
       if (parentEl) {
         parentEl.classList.add('active');
+        hydrateMedia(parentEl);
       }
     }
     

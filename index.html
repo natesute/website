@@ -312,6 +312,126 @@
       margin-bottom: 1.5rem;
     }
 
+    .page-content .page-intro {
+      margin-bottom: 2rem;
+    }
+
+    .page-content .page-intro p {
+      font-size: 0.95rem;
+      color: #888;
+    }
+
+    /* Project facts row (status, last entry, source link) */
+    .page-content .project-facts {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.75rem;
+      font-family: 'Geo', sans-serif;
+      font-size: 0.85rem;
+      color: #888;
+      margin-top: 0.75rem;
+    }
+
+    .status-badge {
+      font-family: 'Geo', sans-serif;
+      font-size: 0.8rem;
+      padding: 0.05rem 0.45rem;
+      border: 1px solid currentColor;
+    }
+
+    .status-ongoing { color: #8CA6B8; }
+    .status-shipped { color: #c4a77d; }
+    .status-experiment { color: #e8e4de; }
+    .status-dormant { color: #666; }
+
+    .item-title .status-badge {
+      margin-left: 0.5rem;
+    }
+
+    /* Media inside article content */
+    .article-content img,
+    .article-content video {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      margin: 1.5rem 0;
+      border: 2px solid #444;
+    }
+
+    .article-content figure {
+      margin: 1.5rem 0;
+    }
+
+    .article-content figure img {
+      margin: 0;
+    }
+
+    .article-content figcaption {
+      font-family: 'Geo', sans-serif;
+      font-size: 0.85rem;
+      color: #666;
+      margin-top: 0.4rem;
+    }
+
+    .article-content .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 0.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .article-content .gallery figure,
+    .article-content .gallery img {
+      margin: 0;
+      width: 100%;
+    }
+
+    /* Embedded live demo */
+    .demo-embed {
+      margin: 2rem 0 0.5rem;
+      border: 2px solid #444;
+      aspect-ratio: 16 / 10;
+      background: #000;
+    }
+
+    .demo-embed iframe {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    .demo-note {
+      font-family: 'Geo', sans-serif;
+      font-size: 0.85rem;
+      margin-bottom: 2rem;
+    }
+
+    /* Project journal */
+    .journal {
+      margin-top: 3rem;
+      border-top: 1px solid #333;
+      padding-top: 1.5rem;
+    }
+
+    .journal-entry {
+      margin-bottom: 2.5rem;
+    }
+
+    .journal-entry h3 {
+      font-family: 'Geo', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 400;
+      color: #e8e4de;
+      text-shadow: 1px 1px 0 #8CA6B8;
+      margin-bottom: 0.25rem;
+    }
+
+    .journal-entry .article-content {
+      margin-top: 0.75rem;
+    }
+
     /* Small screens */
     @media (max-width: 600px) {
       html {
@@ -347,7 +467,10 @@
       <h1>about me</h1>
       <a href="/" class="back-link" data-nav="home">← back to home</a>
     </header>
-    <p>About content coming soon.</p>
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+<p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+<p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.</p>
+
   </article>
 
   <!-- Projects List Page -->
@@ -356,41 +479,109 @@
       <h1>projects</h1>
       <a href="/" class="back-link" data-nav="home">← back to home</a>
     </header>
-        <a href="/projects/lorem-ipsum" class="list-item" data-nav="projects/lorem-ipsum">
-      <div class="item-title">Lorem Ipsum</div>
-      <div class="item-meta">Dolor sit amet consectetur</div>
+        <a href="/projects/pitch-perfect" class="list-item" data-nav="projects/pitch-perfect">
+      <div class="item-title">pitch-perfect<span class="status-badge status-shipped">shipped</span></div>
+      <div class="item-meta"></div>
     </a>
-    <a href="/projects/adipiscing-elit" class="list-item" data-nav="projects/adipiscing-elit">
-      <div class="item-title">Adipiscing Elit</div>
-      <div class="item-meta">Sed do eiusmod tempor incididunt</div>
+    <a href="/projects/rockets" class="list-item" data-nav="projects/rockets">
+      <div class="item-title">rockets<span class="status-badge status-ongoing">ongoing</span></div>
+      <div class="item-meta"></div>
+    </a>
+    <a href="/projects/song-viz" class="list-item" data-nav="projects/song-viz">
+      <div class="item-title">song-viz<span class="status-badge status-experiment">experiment</span></div>
+      <div class="item-meta"></div>
+    </a>
+    <a href="/projects/strood" class="list-item" data-nav="projects/strood">
+      <div class="item-title">strood<span class="status-badge status-ongoing">ongoing</span></div>
+      <div class="item-meta"></div>
+    </a>
+    <a href="/projects/undo" class="list-item" data-nav="projects/undo">
+      <div class="item-title">undo<span class="status-badge status-ongoing">ongoing</span></div>
+      <div class="item-meta"></div>
     </a>
   </article>
 
   <!-- Individual Project Pages -->
   
-  <!-- Project: Adipiscing Elit -->
-  <article id="page-projects-adipiscing-elit" class="page-content" data-parent="projects">
+  <!-- Project: pitch-perfect -->
+  <article id="page-projects-pitch-perfect" class="page-content" data-parent="projects">
     <header>
-      <h1>Adipiscing Elit</h1>
+      <h1>pitch-perfect</h1>
       <a href="/projects" class="back-link" data-nav="projects">← back to projects</a>
     </header>
-    <p class="meta">Sed do eiusmod tempor incididunt</p>
+    <p class="meta"></p>
+    <p class="project-facts"><span class="status-badge status-shipped">shipped</span>
+      <a href="https://github.com/natesute/pitch-perfect" target="_blank" rel="noopener">source</a></p>
+    <div class="demo-embed">
+      <iframe data-src="https://natesute.github.io/pitch-perfect/" title="pitch-perfect — live demo" allow="fullscreen; autoplay; midi"></iframe>
+    </div>
+    <p class="demo-note"><a href="https://natesute.github.io/pitch-perfect/" target="_blank" rel="noopener">open the demo in its own tab →</a></p>
     <div class="article-content">
-      <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
-
+      
     </div>
   </article>
 
-  <!-- Project: Lorem Ipsum -->
-  <article id="page-projects-lorem-ipsum" class="page-content" data-parent="projects">
+  <!-- Project: rockets -->
+  <article id="page-projects-rockets" class="page-content" data-parent="projects">
     <header>
-      <h1>Lorem Ipsum</h1>
+      <h1>rockets</h1>
       <a href="/projects" class="back-link" data-nav="projects">← back to projects</a>
     </header>
-    <p class="meta">Dolor sit amet consectetur</p>
+    <p class="meta"></p>
+    <p class="project-facts"><span class="status-badge status-ongoing">ongoing</span>
+      <a href="https://github.com/natesute/rockets" target="_blank" rel="noopener">source</a></p>
+    <div class="demo-embed">
+      <iframe data-src="https://natesute.github.io/rockets/" title="rockets — live demo" allow="fullscreen; autoplay; midi"></iframe>
+    </div>
+    <p class="demo-note"><a href="https://natesute.github.io/rockets/" target="_blank" rel="noopener">open the demo in its own tab →</a></p>
     <div class="article-content">
-      <p>Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.</p>
+      
+    </div>
+  </article>
 
+  <!-- Project: song-viz -->
+  <article id="page-projects-song-viz" class="page-content" data-parent="projects">
+    <header>
+      <h1>song-viz</h1>
+      <a href="/projects" class="back-link" data-nav="projects">← back to projects</a>
+    </header>
+    <p class="meta"></p>
+    <p class="project-facts"><span class="status-badge status-experiment">experiment</span>
+      <a href="https://github.com/natesute/song-viz" target="_blank" rel="noopener">source</a></p>
+    <div class="article-content">
+      
+    </div>
+  </article>
+
+  <!-- Project: strood -->
+  <article id="page-projects-strood" class="page-content" data-parent="projects">
+    <header>
+      <h1>strood</h1>
+      <a href="/projects" class="back-link" data-nav="projects">← back to projects</a>
+    </header>
+    <p class="meta"></p>
+    <p class="project-facts"><span class="status-badge status-ongoing">ongoing</span>
+      <a href="https://github.com/natesute/strood" target="_blank" rel="noopener">source</a></p>
+    <div class="article-content">
+      
+    </div>
+  </article>
+
+  <!-- Project: undo -->
+  <article id="page-projects-undo" class="page-content" data-parent="projects">
+    <header>
+      <h1>undo</h1>
+      <a href="/projects" class="back-link" data-nav="projects">← back to projects</a>
+    </header>
+    <p class="meta"></p>
+    <p class="project-facts"><span class="status-badge status-ongoing">ongoing</span>
+      <a href="https://github.com/natesute/undo" target="_blank" rel="noopener">source</a></p>
+    <div class="demo-embed">
+      <iframe data-src="/demos/undo/" title="undo — live demo" allow="fullscreen; autoplay; midi"></iframe>
+    </div>
+    <p class="demo-note"><a href="/demos/undo/" target="_blank" rel="noopener">open the demo in its own tab →</a></p>
+    <div class="article-content">
+      
     </div>
   </article>
 
@@ -400,14 +591,15 @@
       <h1>writings</h1>
       <a href="/" class="back-link" data-nav="home">← back to home</a>
     </header>
-        <p class="meta" style="margin-bottom: 2rem;">Duis aute irure dolor in reprehenderit in voluptate.</p>
+        <div class="page-intro"><p>Duis aute irure dolor in reprehenderit in voluptate.</p>
+</div>
     <a href="/writings/cupidatat" class="list-item" data-nav="writings/cupidatat">
       <div class="item-title">Cupidatat Non Proident</div>
-      <div class="item-meta">February 20, 2024</div>
+      <div class="item-meta">20 February 2024</div>
     </a>
     <a href="/writings/excepteur-sint" class="list-item" data-nav="writings/excepteur-sint">
       <div class="item-title">Excepteur Sint Occaecat</div>
-      <div class="item-meta">January 15, 2024</div>
+      <div class="item-meta">15 January 2024</div>
     </a>
   </article>
 
@@ -419,7 +611,7 @@
       <h1>Excepteur Sint Occaecat</h1>
       <a href="/writings" class="back-link" data-nav="writings">← back to writings</a>
     </header>
-    <p class="meta">January 15, 2024</p>
+    <p class="meta">15 January 2024</p>
     <div class="article-content">
       <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
 
@@ -432,7 +624,7 @@
       <h1>Cupidatat Non Proident</h1>
       <a href="/writings" class="back-link" data-nav="writings">← back to writings</a>
     </header>
-    <p class="meta">February 20, 2024</p>
+    <p class="meta">20 February 2024</p>
     <div class="article-content">
       <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
 
