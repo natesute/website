@@ -7,14 +7,6 @@
 - [About Me](/about-me): Background, skills, and interests
 - [Contact Me](/contact-me): Get in touch
 
-## Projects
-
-- [pitch-perfect](/projects/pitch-perfect) [shipped]: 
-- [rockets](/projects/rockets) [ongoing]: 
-- [song-viz](/projects/song-viz) [experiment]: 
-- [strood](/projects/strood) [ongoing]: 
-- [undo](/projects/undo) [ongoing]: 
-
 ## Writings
 
 - [Cupidatat Non Proident](/writings/cupidatat) (2024-02-20): Another post

@@ -79,7 +79,7 @@ function main(): void {
 
   const routes = [
     'about-me',
-    'projects',
+    ...(projectSlugs.length > 0 ? ['projects'] : []),
     'writings',
     'contacts',
     ...projectSlugs.map((s) => `projects/${s}`),

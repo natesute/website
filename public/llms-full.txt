@@ -20,30 +20,6 @@ Feel free to reach out via email or connect on GitHub.
 
 ---
 
-## Projects
-
-### pitch-perfect
-
-** — shipped
-
-### rockets
-
-** — ongoing
-
-### song-viz
-
-** — experiment
-
-### strood
-
-** — ongoing
-
-### undo
-
-** — ongoing
-
----
-
 ## Writings
 
 Duis aute irure dolor in reprehenderit in voluptate.

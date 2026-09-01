@@ -135,6 +135,7 @@ async function collectFolderProjects(): Promise<ProjectItem[]> {
     if (!fs.existsSync(indexPath)) continue;
 
     const { meta, content } = parseMarkdownFile(indexPath);
+    if (meta.draft) continue;
     const html = content ? await marked.parse(content) : '';
 
     const entries: JournalEntry[] = [];
@@ -593,6 +594,23 @@ function generateIndexHtml(
     .map(generateProjectPageHtml)
     .join('\n');
 
+  const projectsNav = projects.length > 0
+    ? '<a href="/projects" data-nav="projects">projects</a>'
+    : '';
+  const projectsSection = projects.length > 0
+    ? `<!-- Projects List Page -->
+  <article id="page-projects" class="page-content">
+    <header>
+      <h1>projects</h1>
+      <a href="/" class="back-link" data-nav="home">← back to home</a>
+    </header>
+${projectsList}
+  </article>
+
+  <!-- Individual Project Pages -->
+${projectPages}`
+    : '';
+
   const writingPages = writings
     .filter((w) => !w.path.includes('_index') && !w.meta.draft)
     .map(generateWritingPageHtml)
@@ -601,8 +619,11 @@ function generateIndexHtml(
   // Replace placeholders in template
   let html = template;
   html = html.replace('<!-- ABOUT_CONTENT -->', aboutContent);
-  html = html.replace('<!-- PROJECTS_LIST -->', projectsList);
-  html = html.replace('<!-- PROJECT_PAGES -->', projectPages);
+  html = html.replace(
+    '    <!-- PROJECTS_NAV -->',
+    projectsNav ? `    ${projectsNav}` : ''
+  );
+  html = html.replace('  <!-- PROJECTS_SECTION -->', projectsSection);
   html = html.replace('<!-- WRITINGS_LIST -->', writingsList);
   html = html.replace('<!-- WRITING_PAGES -->', writingPages);
   html = html.replace('<!-- CONTACT_CONTENT -->', contactContent);
@@ -662,7 +683,7 @@ async function build(): Promise<void> {
 
   // Projects: flat projects/<slug>.md files plus projects/<slug>/ folders
   const projects: ProjectItem[] = items
-    .filter((i) => i.type === 'project' && !i.path.includes('_index'))
+    .filter((i) => i.type === 'project' && !i.path.includes('_index') && !i.meta.draft)
     .map((i) => ({
       ...i,
       entries: [],
