@@ -1,0 +1,50 @@
+/* Plain pages for the Undo app: support and privacy policy. */
+:root {
+  --bg: #0A0E14;
+  --fg: #e8e4de;
+  --muted: #9a968f;
+  --accent: #8CA6B8;
+  --rule: #444;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 17px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+main {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 48px 16px 80px;
+}
+
+.crumb {
+  margin: 0 0 32px;
+  color: var(--muted);
+  text-transform: lowercase;
+}
+
+h1 {
+  margin: 0 0 8px;
+  font-size: 2rem;
+  line-height: 1.2;
+}
+
+h2 {
+  margin: 40px 0 8px;
+  padding-top: 16px;
+  border-top: 2px solid var(--rule);
+  font-size: 1.15rem;
+}
+
+.updated { margin: 0 0 24px; color: var(--muted); }
+
+a { color: var(--accent); }
+
+ul { padding-left: 1.25em; }
+
+li + li { margin-top: 4px; }
